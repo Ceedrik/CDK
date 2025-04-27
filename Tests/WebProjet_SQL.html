@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire SQL & FAQ & Environnements</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Style pour la police Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Styles communs (cartes, en-têtes, contenu) */
+        .query-card, .faq-card, .env-card {
+            background-color: white; border: 1px solid #e5e7eb; /* gray-200 */ border-radius: 0.5rem; /* rounded-lg */
+            padding: 1rem; /* p-4 */ margin-bottom: 0.75rem; /* mb-3 */ position: relative; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .query-header, .faq-header, .env-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 0.5rem; /* mb-2 */ padding-right: 5rem; /* Espace boutons */
+        }
+        .query-name, .faq-question, .env-name { font-weight: 600; /* font-semibold */ color: #1f2937; /* gray-800 */ }
+        .query-content, .faq-answer, .env-details {
+            white-space: pre-wrap; word-wrap: break-word; background-color: #f9fafb; /* gray-50 */
+            border: 1px solid #e5e7eb; /* gray-200 */ padding: 0.75rem; /* p-3 */ border-radius: 0.375rem; /* rounded-md */
+            margin-bottom: 0.5rem; /* mb-2 */ color: #374151; /* gray-700 */
+        }
+        .faq-answer, .env-details { font-family: inherit; } /* Utilise police par défaut */
+        .query-content { font-family: monospace; } /* Police pour SQL */
+        .env-details p { margin-bottom: 0.25rem; font-size: 0.875rem; }
+        .env-details strong { color: #4f46e5; } /* indigo-600 */
+
+        .query-comment {
+            font-size: 0.875rem; color: #6b7280; /* gray-500 */ margin-top: 0.75rem; /* mt-3 */ padding-top: 0.75rem; /* pt-3 */
+            border-top: 1px dashed #e5e7eb; /* gray-200 */ white-space: pre-wrap; word-wrap: break-word;
+        }
+        .param-highlight { background-color: #fef3c7; /* amber-100 */ color: #92400e; /* amber-700 */ font-weight: bold; padding: 0.1rem 0.2rem; border-radius: 0.25rem; }
+        .action-buttons { position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem; }
+        .icon-btn {
+            background-color: #f3f4f6; /* gray-100 */ color: #4b5563; /* gray-600 */ border: 1px solid #d1d5db; /* gray-300 */ border-radius: 9999px; /* rounded-full */
+            width: 1.75rem; /* w-7 */ height: 1.75rem; /* h-7 */ display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.15s ease-in-out;
+        }
+        .icon-btn:hover { background-color: #e5e7eb; /* gray-200 */ color: #1f2937; /* gray-800 */ }
+        .icon-btn svg { width: 0.875rem; /* w-3.5 */ height: 0.875rem; /* h-3.5 */ }
+        .copy-success { background-color: #dcfce7 !important; color: #15803d !important; border-color: #bbf7d0 !important; }
+        .edit-btn { background-color: #ffedd5; /* orange-100 */ color: #9a3412; /* orange-700 */ border-color: #fed7aa; /* orange-200 */ }
+        .edit-btn:hover { background-color: #fed7aa; /* orange-200 */ color: #7c2d12; /* orange-800 */ }
+        .delete-btn { background-color: #fee2e2; /* red-100 */ color: #b91c1c; /* red-700 */ border-color: #fecaca; /* red-200 */ }
+        .delete-btn:hover { background-color: #fecaca; /* red-200 */ color: #991b1b; /* red-800 */ }
+        #import-file-input { display: none; }
+        #message-area { min-height: 1.5rem; margin-bottom: 1rem; text-align: center; font-size: 0.875rem; }
+        .success-message { color: #059669; /* green-600 */ }
+        .error-message { color: #dc2626; /* red-600 */ }
+        .tab-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; }
+        .tab-btn { padding: 0.5rem 1rem; border: 1px solid transparent; border-bottom: none; border-radius: 0.375rem 0.375rem 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 500; color: #6b7280; transition: all 0.15s ease-in-out; }
+        .tab-btn:hover { background-color: #f9fafb; color: #374151; }
+        .tab-btn.active { background-color: white; color: #3b82f6; /* blue-500 */ border-color: #e5e7eb #e5e7eb white; border-bottom: 1px solid white; margin-bottom: -1px; }
+        #parameters-container { position: relative; }
+        /* Formulaires */
+        .form-section-container { /* Wrapper pour le header pliable et le contenu */
+             margin-bottom: 2rem;
+             border: 1px solid #e5e7eb; /* gray-200 */
+             border-radius: 0.5rem; /* rounded-lg */
+             background-color: #f9fafb; /* gray-50 */
+             overflow: hidden; /* Pour les coins arrondis */
+        }
+        .form-section-container.editing {
+             background-color: #fffbeb; /* yellow-50 léger */
+             border-color: #fef3c7; /* yellow-100 */
+        }
+        /* Sections principales */
+        .main-section { display: none; } /* Caché par défaut */
+        .main-section.active { display: block; } /* Affiché si actif */
+        #env-selector-container { margin-bottom: 1rem; padding: 0 1.5rem; /* Ajout padding pour aligner avec contenu param */ }
+
+        /* --- Styles pour Sections Pliables --- */
+        .collapsible-header {
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+            padding: 1rem 1.5rem; background-color: #f3f4f6; border-bottom: 1px solid #e5e7eb;
+        }
+        .collapsible-header h2, .collapsible-header h3 { margin-bottom: 0; color: #374151; font-size: 1.125rem; font-weight: 500; }
+        .toggle-icon { transition: transform 0.3s ease-in-out; width: 1.25rem; height: 1.25rem; color: #6b7280; }
+        .collapsible-content {
+            overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-in-out, padding 0.4s ease-out;
+            max-height: 2000px; opacity: 1; padding: 1.5rem; background-color: #f9fafb;
+        }
+        .collapsible-content.collapsed { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; border-top: none; }
+        .toggle-icon.collapsed { transform: rotate(-90deg); }
+        .list-section-wrapper { margin-bottom: 2rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background-color: white; overflow: hidden; }
+        .list-section-wrapper .collapsible-content { background-color: white; }
+        .list-section-wrapper .collapsible-header { background-color: #f9fafb; }
+
+        /* Style pour le sélecteur de couleur */
+        .color-picker-container { display: flex; align-items: center; gap: 0.5rem; /* space-x-2 */ }
+        input[type="color"] {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            width: 2.5rem; /* w-10 */ height: 1.75rem; /* h-7 */ padding: 0; border: none;
+            background: none; cursor: pointer; border: 1px solid #d1d5db; border-radius: 0.375rem; /* rounded-md */
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 0.25rem; /* rounded */ }
+        input[type="color"]::-moz-color-swatch { border: none; border-radius: 0.25rem; /* rounded */ }
+        .color-hex-display {
+            font-family: monospace; font-size: 0.875rem; /* text-sm */ color: #4b5563; /* gray-600 */
+            padding: 0.25rem 0.5rem; background-color: #e5e7eb; /* gray-200 */ border-radius: 0.25rem;
+        }
+
+    </style>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6 md:p-10">
+
+    <div class="container mx-auto max-w-6xl bg-white p-6 rounded-lg shadow-lg">
+
+        <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Gestionnaire SQL / FAQ / Environnements</h1>
+
+        <div id="message-area"></div>
+
+        <div id="main-tab-container" class="tab-container"></div>
+
+        <div id="query-section" class="main-section">
+
+            <div class="form-section-container" id="query-form-wrapper">
+                <div class="collapsible-header" data-collapsible-target="add-edit-form-content">
+                    <h2 id="form-title" class="text-xl font-semibold text-gray-700">Ajouter/Modifier Requête</h2>
+                    <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                </div>
+                <div id="add-edit-form-content" class="collapsible-content">
+                    <div id="add-edit-form">
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="new-query-name" class="block text-sm font-medium text-gray-700 mb-1">Nom / Titre</label>
+                                <input type="text" id="new-query-name" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: Tâches urgentes projet X">
+                            </div>
+                            <div>
+                                <label for="new-query-category" class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+                                <input type="text" id="new-query-category" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: Projets, Admin, Debug">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="new-query-text" class="block text-sm font-medium text-gray-700 mb-1">Requête SQL</label>
+                            <p class="text-xs text-gray-500 mb-2">Utilisez `{param}` pour les paramètres (ex: `{color}`).</p>
+                            <textarea id="new-query-text" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" rows="5" placeholder="SELECT * FROM elements WHERE color = '{color}';"></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label for="new-query-comment" class="block text-sm font-medium text-gray-700 mb-1">Commentaire (optionnel)</label>
+                            <textarea id="new-query-comment" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="3" placeholder="Ajouter une note ou une explication..."></textarea>
+                        </div>
+                        <div id="form-buttons" class="mt-4 flex items-center space-x-3">
+                            <button id="submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
+                                Ajouter la Requête
+                            </button>
+                            <button id="cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="parameters-section-wrapper" class="form-section-container mb-8">
+                 <div class="collapsible-header" data-collapsible-target="parameters-section-content">
+                     <h2 class="text-xl font-semibold text-gray-700">Environnement & Paramètres</h2>
+                     <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                 </div>
+                 <div id="parameters-section-content" class="collapsible-content">
+                     <div id="parameters-section">
+                        <div id="env-selector-container" class="mb-6">
+                            <label for="environment-selector" class="block text-sm font-medium text-gray-700 mb-1">Appliquer un Environnement :</label>
+                            <select id="environment-selector" class="w-full md:w-1/2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"></select>
+                        </div>
+                        <div class="flex justify-between items-center mb-3 mt-4">
+                            <h3 class="text-lg font-medium text-gray-600">Paramètres (Catégorie Actuelle)</h3>
+                            <button id="clear-params-btn" class="hidden bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md text-xs transition duration-150 ease-in-out">
+                                Effacer Valeurs
+                            </button>
+                        </div>
+                        <div id="parameters-container" class="space-y-3 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
+                            <p id="no-params-msg" class="text-gray-500 italic">Aucun paramètre.</p>
+                             </div>
+                    </div>
+                 </div>
+            </div>
+
+            <div id="queries-list-section-wrapper" class="list-section-wrapper mb-6">
+                 <div class="collapsible-header" data-collapsible-target="queries-list-section-content">
+                     <h2 class="text-xl font-semibold text-gray-700">Requêtes Enregistrées</h2>
+                     <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                 </div>
+                 <div id="queries-list-section-content" class="collapsible-content">
+                    <div id="queries-list-section">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
+                             <div></div> <div class="flex-shrink-0 space-x-2">
+                                 <button id="import-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 rounded-md text-sm transition duration-150 ease-in-out">
+                                     Importer Tout
+                                 </button>
+                                 <button id="export-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1 px-3 rounded-md text-sm transition duration-150 ease-in-out">
+                                     Exporter Tout
+                                 </button>
+                                 <input type="file" id="import-file-input" accept=".json">
+                             </div>
+                        </div>
+                        <div id="category-tab-container" class="tab-container"></div>
+                        <div id="queries-list" class="space-y-3">
+                            <p id="no-queries-msg" class="text-gray-500 italic p-4">Aucune requête.</p>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </div> <div id="faq-section" class="main-section">
+            <div class="form-section-container" id="faq-form-wrapper">
+                 <div class="collapsible-header" data-collapsible-target="faq-form-content">
+                     <h2 id="faq-form-title" class="text-xl font-semibold text-gray-700">Ajouter/Modifier FAQ</h2>
+                     <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                 </div>
+                 <div id="faq-form-content" class="collapsible-content">
+                     <div id="faq-form-container">
+                         <div class="mb-4">
+                             <label for="faq-question" class="block text-sm font-medium text-gray-700 mb-1">Question / Titre</label>
+                             <textarea id="faq-question" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="2" placeholder="Question fréquente ou titre de la procédure..."></textarea>
+                         </div>
+                         <div class="mb-4">
+                             <label for="faq-answer" class="block text-sm font-medium text-gray-700 mb-1">Réponse / Procédure</label>
+                             <textarea id="faq-answer" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="6" placeholder="Réponse détaillée ou étapes de la procédure..."></textarea>
+                         </div>
+                         <div id="faq-form-buttons" class="mt-4 flex items-center space-x-3">
+                            <button id="faq-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
+                                Ajouter à la FAQ
+                            </button>
+                            <button id="faq-cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+            <div id="faq-list-section-wrapper" class="list-section-wrapper mb-6">
+                 <div class="collapsible-header" data-collapsible-target="faq-list-section-content">
+                     <h2 class="text-xl font-semibold text-gray-700">FAQ / Procédures Enregistrées</h2>
+                     <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                 </div>
+                 <div id="faq-list-section-content" class="collapsible-content">
+                    <div id="faq-list" class="space-y-3">
+                        <p id="no-faq-msg" class="text-gray-500 italic p-4">Aucune entrée FAQ.</p>
+                    </div>
+                 </div>
+            </div>
+        </div> <div id="env-section" class="main-section">
+            <div class="form-section-container" id="env-form-wrapper">
+                  <div class="collapsible-header" data-collapsible-target="env-form-content">
+                     <h2 id="env-form-title" class="text-xl font-semibold text-gray-700">Ajouter/Modifier Environnement</h2>
+                     <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                 </div>
+                 <div id="env-form-content" class="collapsible-content">
+                     <div id="env-form-container">
+                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                             <div>
+                                 <label for="env-name" class="block text-sm font-medium text-gray-700 mb-1">Nom Environnement</label>
+                                 <input type="text" id="env-name" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: Production Client A">
+                             </div>
+                             <div>
+                                 <label for="env-tenant-id" class="block text-sm font-medium text-gray-700 mb-1">Tenant ID</label>
+                                 <input type="text" id="env-tenant-id" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="ID du tenant">
+                             </div>
+                             <div>
+                                 <label for="env-company-id" class="block text-sm font-medium text-gray-700 mb-1">Company ID</label>
+                                 <input type="text" id="env-company-id" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="ID de la compagnie">
+                             </div>
+                         </div>
+                         <div id="env-form-buttons" class="mt-4 flex items-center space-x-3">
+                            <button id="env-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
+                                Ajouter Environnement
+                            </button>
+                            <button id="env-cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+            <div id="env-list-section-wrapper" class="list-section-wrapper mb-6">
+                 <div class="collapsible-header" data-collapsible-target="env-list-section-content">
+                     <h2 class="text-xl font-semibold text-gray-700">Environnements Enregistrés</h2>
+                     <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                 </div>
+                 <div id="env-list-section-content" class="collapsible-content">
+                    <div id="env-list" class="space-y-3">
+                        <p id="no-env-msg" class="text-gray-500 italic p-4">Aucun environnement défini.</p>
+                    </div>
+                 </div>
+            </div>
+        </div> </div> <script>
+        // --- DOM Elements ---
+        const mainTabContainer = document.getElementById('main-tab-container');
+        const querySection = document.getElementById('query-section');
+        const faqSection = document.getElementById('faq-section');
+        const envSection = document.getElementById('env-section');
+        const queryFormWrapper = document.getElementById('query-form-wrapper');
+        const addEditForm = document.getElementById('add-edit-form');
+        const formTitle = document.getElementById('form-title');
+        const newQueryNameInput = document.getElementById('new-query-name');
+        const newQueryCategoryInput = document.getElementById('new-query-category');
+        const newQueryTextInput = document.getElementById('new-query-text');
+        const newQueryCommentInput = document.getElementById('new-query-comment');
+        const submitBtn = document.getElementById('submit-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const parametersSectionWrapper = document.getElementById('parameters-section-wrapper');
+        const environmentSelector = document.getElementById('environment-selector');
+        const parametersContainer = document.getElementById('parameters-container');
+        const clearParamsBtn = document.getElementById('clear-params-btn');
+        const queriesListSectionWrapper = document.getElementById('queries-list-section-wrapper');
+        const categoryTabContainer = document.getElementById('category-tab-container');
+        const queriesList = document.getElementById('queries-list');
+        const noParamsMsg = document.getElementById('no-params-msg');
+        const noQueriesMsg = document.getElementById('no-queries-msg');
+        const faqFormWrapper = document.getElementById('faq-form-wrapper');
+        const faqFormContainer = document.getElementById('faq-form-container');
+        const faqFormTitle = document.getElementById('faq-form-title');
+        const faqQuestionInput = document.getElementById('faq-question');
+        const faqAnswerInput = document.getElementById('faq-answer');
+        const faqSubmitBtn = document.getElementById('faq-submit-btn');
+        const faqCancelEditBtn = document.getElementById('faq-cancel-edit-btn');
+        const faqListSectionWrapper = document.getElementById('faq-list-section-wrapper');
+        const faqList = document.getElementById('faq-list');
+        const noFaqMsg = document.getElementById('no-faq-msg');
+        const envFormWrapper = document.getElementById('env-form-wrapper');
+        const envFormContainer = document.getElementById('env-form-container');
+        const envFormTitle = document.getElementById('env-form-title');
+        const envNameInput = document.getElementById('env-name');
+        const envTenantIdInput = document.getElementById('env-tenant-id');
+        const envCompanyIdInput = document.getElementById('env-company-id');
+        const envSubmitBtn = document.getElementById('env-submit-btn');
+        const envCancelEditBtn = document.getElementById('env-cancel-edit-btn');
+        const envListSectionWrapper = document.getElementById('env-list-section-wrapper');
+        const envList = document.getElementById('env-list');
+        const noEnvMsg = document.getElementById('no-env-msg');
+        const importBtn = document.getElementById('import-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const importFileInput = document.getElementById('import-file-input');
+        const messageArea = document.getElementById('message-area');
+
+
+        // --- Application State ---
+        let originalQueries = [];
+        let faqItems = [];
+        let companyEnvironments = [];
+        let parameters = {};
+        let currentMainTab = 'queries';
+        let currentQueryCategory = 'all';
+        let editingQueryId = null;
+        let editingFAQId = null;
+        let editingEnvId = null;
+        let collapsedSections = {};
+        const DEFAULT_CATEGORY = 'Général';
+        const LOCAL_STORAGE_KEY = 'sqlFaqEnvManagerData_v3';
+
+        // --- SVG Icons ---
+        const copyIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m9.75 0h-3.375c-.621 0-1.125.504-1.125 1.125v9.25c0 .621.504 1.125 1.125 1.125h3.375c.621 0 1.125-.504 1.125-1.125V7.875c0-.621-.504-1.125-1.125-1.125Z" /></svg>`;
+        const deleteIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>`;
+        const checkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
+        const editIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`;
+        const arrowDownIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>`;
+
+
+        // --- Fonctions Utilitaires ---
+        function showMessage(text, isError = false) {
+             messageArea.textContent = text;
+             messageArea.className = isError ? 'error-message' : 'success-message';
+             setTimeout(() => { messageArea.textContent = ''; messageArea.className = ''; }, 4000);
+        }
+        function extractParameters(query) {
+            const paramRegex = /\{([a-zA-Z0-9_]+)\}/g;
+            const params = new Set();
+            let match;
+            while ((match = paramRegex.exec(query)) !== null) { params.add(match[1]); }
+            return params;
+        }
+         function processQueryText(queryText) {
+             let processed = queryText;
+             Object.keys(parameters).forEach(paramName => {
+                 const placeholder = `{${paramName}}`;
+                 const value = parameters[paramName];
+                 const escapedPlaceholder = placeholder.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                 const regex = new RegExp(escapedPlaceholder, 'g');
+                 const replacement = (value !== undefined && value !== '') ? value : placeholder;
+                 processed = processed.replace(regex, replacement);
+             });
+             return processed;
+        }
+
+        // --- Fonctions de Rendu ---
+        function updateParametersUI() {
+            parametersContainer.innerHTML = '';
+            parametersContainer.appendChild(noParamsMsg);
+            const relevantQueries = originalQueries.filter(q => currentQueryCategory === 'all' || (q.category || DEFAULT_CATEGORY) === currentQueryCategory);
+            const relevantParams = new Set();
+            relevantQueries.forEach(q => extractParameters(q.text).forEach(p => relevantParams.add(p)));
+
+            if (relevantParams.size === 0) {
+                noParamsMsg.textContent = `Aucun paramètre utilisé dans la catégorie "${currentQueryCategory === 'all' ? 'Toutes' : currentQueryCategory}".`;
+                noParamsMsg.style.display = 'block';
+                clearParamsBtn.classList.add('hidden');
+                return;
+            }
+            noParamsMsg.style.display = 'none';
+            clearParamsBtn.classList.remove('hidden');
+
+            relevantParams.forEach(paramName => {
+                const currentValue = parameters[paramName] || '';
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-end space-x-4';
+
+                const label = document.createElement('label');
+                label.htmlFor = `param-${paramName}`; label.textContent = `${paramName}:`;
+                label.className = 'w-40 text-sm font-medium text-gray-600 flex-shrink-0 text-right pr-2';
+
+                if (paramName === 'color') {
+                    const colorContainer = document.createElement('div');
+                    colorContainer.className = 'color-picker-container';
+                    const colorInput = document.createElement('input');
+                    colorInput.type = 'color'; colorInput.id = `param-${paramName}`; colorInput.dataset.paramName = paramName;
+                    colorInput.value = /^#[0-9A-F]{6}$/i.test(currentValue) ? currentValue : '#000000';
+                    const hexDisplay = document.createElement('span');
+                    hexDisplay.id = `hex-${paramName}`; hexDisplay.className = 'color-hex-display'; hexDisplay.textContent = colorInput.value;
+                    colorInput.addEventListener('input', (event) => {
+                        const newColor = event.target.value; parameters[paramName] = newColor; hexDisplay.textContent = newColor;
+                        renderQueries(); saveDataToLocalStorage();
+                    });
+                    colorContainer.appendChild(colorInput); colorContainer.appendChild(hexDisplay);
+                    div.appendChild(label); div.appendChild(colorContainer);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text'; input.id = `param-${paramName}`; input.dataset.paramName = paramName;
+                    input.value = currentValue; input.className = 'param-input w-52 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm';
+                    input.placeholder = `Valeur`;
+                    input.addEventListener('input', (event) => { parameters[paramName] = event.target.value; renderQueries(); saveDataToLocalStorage(); });
+                    div.appendChild(label); div.appendChild(input);
+                }
+                parametersContainer.appendChild(div);
+            });
+        }
+        function renderQueryCategoryTabs() {
+             categoryTabContainer.innerHTML = '';
+             const categories = new Set(['all']);
+             originalQueries.forEach(q => categories.add(q.category || DEFAULT_CATEGORY));
+             categories.forEach(category => {
+                 const tabBtn = document.createElement('button');
+                 tabBtn.className = `tab-btn ${category === currentQueryCategory ? 'active' : ''}`;
+                 tabBtn.textContent = category === 'all' ? 'Toutes' : category; tabBtn.dataset.category = category;
+                 tabBtn.onclick = () => { currentQueryCategory = category; renderQueryCategoryTabs(); updateParametersUI(); renderQueries(); };
+                 categoryTabContainer.appendChild(tabBtn);
+             });
+        }
+        function renderQueries() {
+            queriesList.innerHTML = '';
+            const filteredQueries = originalQueries.filter(q => currentQueryCategory === 'all' || (q.category || DEFAULT_CATEGORY) === currentQueryCategory);
+            if (filteredQueries.length === 0) { queriesList.appendChild(noQueriesMsg); noQueriesMsg.style.display = 'block'; return; }
+            noQueriesMsg.style.display = 'none';
+
+            filteredQueries.forEach((queryData) => {
+                const originalIndex = originalQueries.findIndex(q => q.id === queryData.id);
+                let displayQuery = queryData.text;
+                Object.keys(parameters).forEach(paramName => {
+                    const placeholder = `{${paramName}}`; const value = parameters[paramName];
+                    const escapedPlaceholder = placeholder.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); const regex = new RegExp(escapedPlaceholder, 'g');
+                    let replacement;
+                    if (paramName === 'color' && value && /^#[0-9A-F]{6}$/i.test(value)) {
+                        replacement = `<span class="inline-block w-3 h-3 rounded-sm mr-1" style="background-color: ${value}; border: 1px solid #ccc;"></span><span class="param-highlight">${value}</span>`;
+                    } else {
+                         replacement = (value !== undefined && value !== '') ? `<span class="param-highlight">${value}</span>` : `<span class="param-highlight">{${paramName}}</span>`;
+                    }
+                    displayQuery = displayQuery.replace(regex, replacement);
+                });
+                 displayQuery = displayQuery.replace(/\{([a-zA-Z0-9_]+)\}(?!<\/span>)/g, '<span class="param-highlight">{$1}</span>');
+
+                const queryCard = document.createElement('div'); queryCard.className = 'query-card';
+                const header = document.createElement('div'); header.className = 'query-header';
+                const nameSpan = document.createElement('span'); nameSpan.className = 'query-name'; nameSpan.textContent = queryData.name || 'Requête sans nom'; header.appendChild(nameSpan);
+                const actionsDiv = document.createElement('div'); actionsDiv.className = 'action-buttons';
+                const editButton = document.createElement('button'); editButton.className = 'icon-btn edit-btn'; editButton.title = 'Modifier'; editButton.innerHTML = editIconSVG; editButton.onclick = () => startEditingQuery(queryData.id);
+                const copyButton = document.createElement('button'); copyButton.className = 'icon-btn'; copyButton.title = 'Copier'; copyButton.innerHTML = copyIconSVG; copyButton.onclick = () => copyQueryToClipboard(queryData.text, copyButton);
+                const deleteButton = document.createElement('button'); deleteButton.className = 'icon-btn delete-btn'; deleteButton.title = 'Supprimer'; deleteButton.innerHTML = deleteIconSVG; deleteButton.onclick = () => removeQuery(originalIndex);
+                actionsDiv.appendChild(editButton); actionsDiv.appendChild(copyButton); actionsDiv.appendChild(deleteButton);
+                const contentDiv = document.createElement('div'); contentDiv.className = 'query-content'; contentDiv.innerHTML = displayQuery;
+                queryCard.appendChild(actionsDiv); queryCard.appendChild(header); queryCard.appendChild(contentDiv);
+                if (queryData.comment) { const commentDiv = document.createElement('div'); commentDiv.className = 'query-comment'; commentDiv.textContent = queryData.comment; queryCard.appendChild(commentDiv); }
+                queriesList.appendChild(queryCard);
+            });
+        }
+        function renderFAQList() {
+            faqList.innerHTML = '';
+            if (faqItems.length === 0) { faqList.appendChild(noFaqMsg); noFaqMsg.style.display = 'block'; return; }
+            noFaqMsg.style.display = 'none';
+            faqItems.forEach((item, index) => {
+                const faqCard = document.createElement('div'); faqCard.className = 'faq-card';
+                const header = document.createElement('div'); header.className = 'faq-header';
+                const questionSpan = document.createElement('span'); questionSpan.className = 'faq-question'; questionSpan.textContent = item.question || 'Question sans titre'; header.appendChild(questionSpan);
+                const actionsDiv = document.createElement('div'); actionsDiv.className = 'action-buttons';
+                const editButton = document.createElement('button'); editButton.className = 'icon-btn edit-btn'; editButton.title = 'Modifier'; editButton.innerHTML = editIconSVG; editButton.onclick = () => startEditingFAQ(item.id);
+                const deleteButton = document.createElement('button'); deleteButton.className = 'icon-btn delete-btn'; deleteButton.title = 'Supprimer'; deleteButton.innerHTML = deleteIconSVG; deleteButton.onclick = () => removeFAQItem(index);
+                actionsDiv.appendChild(editButton); actionsDiv.appendChild(deleteButton);
+                const answerDiv = document.createElement('div'); answerDiv.className = 'faq-answer'; answerDiv.textContent = item.answer || '';
+                faqCard.appendChild(actionsDiv); faqCard.appendChild(header); faqCard.appendChild(answerDiv); faqList.appendChild(faqCard);
+            });
+        }
+        function renderEnvironmentList() {
+            envList.innerHTML = '';
+            if (companyEnvironments.length === 0) { envList.appendChild(noEnvMsg); noEnvMsg.style.display = 'block'; return; }
+            noEnvMsg.style.display = 'none';
+            companyEnvironments.forEach((env, index) => {
+                const envCard = document.createElement('div'); envCard.className = 'env-card';
+                const header = document.createElement('div'); header.className = 'env-header';
+                const nameSpan = document.createElement('span'); nameSpan.className = 'env-name'; nameSpan.textContent = env.name || 'Environnement sans nom'; header.appendChild(nameSpan);
+                const actionsDiv = document.createElement('div'); actionsDiv.className = 'action-buttons';
+                const editButton = document.createElement('button'); editButton.className = 'icon-btn edit-btn'; editButton.title = 'Modifier'; editButton.innerHTML = editIconSVG; editButton.onclick = () => startEditingEnv(env.id);
+                const deleteButton = document.createElement('button'); deleteButton.className = 'icon-btn delete-btn'; deleteButton.title = 'Supprimer'; deleteButton.innerHTML = deleteIconSVG; deleteButton.onclick = () => removeEnvironment(index);
+                actionsDiv.appendChild(editButton); actionsDiv.appendChild(deleteButton);
+                const detailsDiv = document.createElement('div'); detailsDiv.className = 'env-details';
+                detailsDiv.innerHTML = `<p><strong>Tenant ID:</strong> ${env.tenantId || 'Non défini'}</p><p><strong>Company ID:</strong> ${env.companyId || 'Non défini'}</p>`;
+                envCard.appendChild(actionsDiv); envCard.appendChild(header); envCard.appendChild(detailsDiv); envList.appendChild(envCard);
+            });
+        }
+        function populateEnvironmentSelector() {
+            environmentSelector.innerHTML = '<option value="">-- Sélectionner un Environnement --</option>';
+            companyEnvironments.forEach(env => { const option = document.createElement('option'); option.value = env.id; option.textContent = env.name; environmentSelector.appendChild(option); });
+            if (!companyEnvironments.some(env => env.id == environmentSelector.value)) { environmentSelector.value = ""; }
+        }
+        function renderMainTabs() {
+            mainTabContainer.innerHTML = '';
+            const tabs = [ { id: 'queries', label: 'Requêtes SQL' }, { id: 'faq', label: 'FAQ / Procédures' }, { id: 'environments', label: 'Environnements' } ];
+            tabs.forEach(tab => {
+                const tabBtn = document.createElement('button');
+                tabBtn.className = `tab-btn ${tab.id === currentMainTab ? 'active' : ''}`;
+                tabBtn.textContent = tab.label; tabBtn.dataset.tabId = tab.id;
+                tabBtn.onclick = () => { currentMainTab = tab.id; renderMainTabs(); };
+                mainTabContainer.appendChild(tabBtn);
+            });
+             // Show/Hide main sections
+             querySection.style.display = (currentMainTab === 'queries') ? 'block' : 'none';
+             faqSection.style.display = (currentMainTab === 'faq') ? 'block' : 'none';
+             envSection.style.display = (currentMainTab === 'environments') ? 'block' : 'none';
+             // Call initial render/setup for the active tab
+             if (currentMainTab === 'queries') { renderQueryCategoryTabs(); updateParametersUI(); renderQueries(); populateEnvironmentSelector(); }
+             else if (currentMainTab === 'faq') { renderFAQList(); }
+             else if (currentMainTab === 'environments') { renderEnvironmentList(); }
+             // Initialize collapsible sections AFTER the correct section is visible
+             initializeCollapsibleSections();
+        }
+
+        // --- Fonctions d'Action ---
+        function copyQueryToClipboard(originalQueryText, buttonElement) {
+             const processedText = processQueryText(originalQueryText);
+             navigator.clipboard.writeText(processedText).then(() => {
+                 showMessage('Requête copiée !', false); const originalIcon = buttonElement.innerHTML; const originalClasses = buttonElement.className;
+                 buttonElement.innerHTML = checkIconSVG; buttonElement.classList.add('copy-success');
+                 setTimeout(() => { buttonElement.innerHTML = originalIcon; buttonElement.className = originalClasses; }, 1500);
+             }).catch(err => { console.error('Erreur copie:', err); showMessage('Erreur copie.', true); });
+        }
+        function startEditingQuery(queryId) {
+            const queryToEdit = originalQueries.find(q => q.id === queryId); if (!queryToEdit) return;
+            editingQueryId = queryId;
+            newQueryNameInput.value = queryToEdit.name || ''; newQueryCategoryInput.value = queryToEdit.category || '';
+            newQueryTextInput.value = queryToEdit.text || ''; newQueryCommentInput.value = queryToEdit.comment || '';
+            formTitle.textContent = 'Modifier la Requête'; queryFormWrapper.classList.add('editing');
+            submitBtn.textContent = 'Mettre à Jour'; submitBtn.className = 'bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out';
+            cancelEditBtn.classList.remove('hidden');
+            const formContent = document.getElementById('add-edit-form-content');
+            if (formContent && formContent.classList.contains('collapsed')) { toggleSection(queryFormWrapper.querySelector('.collapsible-header')); }
+            queryFormWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function resetQueryForm() {
+            editingQueryId = null; newQueryNameInput.value = ''; newQueryCategoryInput.value = ''; newQueryTextInput.value = ''; newQueryCommentInput.value = '';
+            formTitle.textContent = 'Ajouter une Nouvelle Requête'; queryFormWrapper.classList.remove('editing');
+            submitBtn.textContent = 'Ajouter la Requête'; submitBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out';
+            cancelEditBtn.classList.add('hidden');
+        }
+        function handleQueryFormSubmit() {
+            const name = newQueryNameInput.value.trim(); const category = newQueryCategoryInput.value.trim() || DEFAULT_CATEGORY;
+            const text = newQueryTextInput.value.trim(); const comment = newQueryCommentInput.value.trim();
+            if (!text) { showMessage("Requête SQL vide.", true); return; } if (!name) { showMessage("Nom requis.", true); return; }
+            if (editingQueryId !== null) {
+                const queryIndex = originalQueries.findIndex(q => q.id === editingQueryId);
+                if (queryIndex !== -1) { originalQueries[queryIndex] = { ...originalQueries[queryIndex], name, category, text, comment }; showMessage("Requête màj.", false); }
+                else { showMessage("Erreur màj.", true); } resetQueryForm();
+            } else {
+                const newQueryData = { id: Date.now() + Math.random(), name, category, text, comment }; originalQueries.push(newQueryData);
+                resetQueryForm(); showMessage("Requête ajoutée.", false);
+            }
+            saveDataToLocalStorage(); renderQueryCategoryTabs(); updateParametersUI(); renderQueries();
+        }
+        function removeQuery(index) {
+            if (index >= 0 && index < originalQueries.length) {
+                if (editingQueryId === originalQueries[index].id) { resetQueryForm(); }
+                originalQueries.splice(index, 1); saveDataToLocalStorage(); renderQueryCategoryTabs(); updateParametersUI(); renderQueries();
+                showMessage("Requête supprimée.", false);
+            }
+        }
+        function startEditingFAQ(faqId) {
+            const itemToEdit = faqItems.find(item => item.id === faqId); if (!itemToEdit) return;
+            editingFAQId = faqId; faqQuestionInput.value = itemToEdit.question || ''; faqAnswerInput.value = itemToEdit.answer || '';
+            faqFormTitle.textContent = 'Modifier l\'Entrée FAQ'; faqFormWrapper.classList.add('editing');
+            faqSubmitBtn.textContent = 'Mettre à Jour'; faqSubmitBtn.className = 'bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out';
+            faqCancelEditBtn.classList.remove('hidden');
+            const formContent = document.getElementById('faq-form-content');
+            if (formContent && formContent.classList.contains('collapsed')) { toggleSection(faqFormWrapper.querySelector('.collapsible-header')); }
+            faqFormWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function resetFAQForm() {
+            editingFAQId = null; faqQuestionInput.value = ''; faqAnswerInput.value = '';
+            faqFormTitle.textContent = 'Ajouter une Entrée FAQ'; faqFormWrapper.classList.remove('editing');
+            faqSubmitBtn.textContent = 'Ajouter à la FAQ'; faqSubmitBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out';
+            faqCancelEditBtn.classList.add('hidden');
+        }
+        function handleFAQFormSubmit() {
+            const question = faqQuestionInput.value.trim(); const answer = faqAnswerInput.value.trim();
+            if (!question) { showMessage("Question vide.", true); return; } if (!answer) { showMessage("Réponse vide.", true); return; }
+            if (editingFAQId !== null) {
+                const itemIndex = faqItems.findIndex(item => item.id === editingFAQId);
+                if (itemIndex !== -1) { faqItems[itemIndex] = { ...faqItems[itemIndex], question, answer }; showMessage("FAQ màj.", false); }
+                else { showMessage("Erreur màj FAQ.", true); } resetFAQForm();
+            } else {
+                const newItem = { id: Date.now() + Math.random(), question, answer }; faqItems.push(newItem);
+                resetFAQForm(); showMessage("FAQ ajoutée.", false);
+            }
+            saveDataToLocalStorage(); renderFAQList();
+        }
+        function removeFAQItem(index) {
+            if (index >= 0 && index < faqItems.length) {
+                if (editingFAQId === faqItems[index].id) { resetFAQForm(); }
+                faqItems.splice(index, 1); saveDataToLocalStorage(); renderFAQList();
+                showMessage("FAQ supprimée.", false);
+            }
+        }
+        function startEditingEnv(envId) {
+            const envToEdit = companyEnvironments.find(env => env.id === envId); if (!envToEdit) return;
+            editingEnvId = envId; envNameInput.value = envToEdit.name || ''; envTenantIdInput.value = envToEdit.tenantId || ''; envCompanyIdInput.value = envToEdit.companyId || '';
+            envFormTitle.textContent = 'Modifier l\'Environnement'; envFormWrapper.classList.add('editing');
+            envSubmitBtn.textContent = 'Mettre à Jour'; envSubmitBtn.className = 'bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out';
+            envCancelEditBtn.classList.remove('hidden');
+            const formContent = document.getElementById('env-form-content');
+             if (formContent && formContent.classList.contains('collapsed')) { toggleSection(envFormWrapper.querySelector('.collapsible-header')); }
+            envFormWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function resetEnvForm() {
+            editingEnvId = null; envNameInput.value = ''; envTenantIdInput.value = ''; envCompanyIdInput.value = '';
+            envFormTitle.textContent = 'Ajouter un Environnement'; envFormWrapper.classList.remove('editing');
+            envSubmitBtn.textContent = 'Ajouter Environnement'; envSubmitBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out';
+            envCancelEditBtn.classList.add('hidden');
+        }
+        function handleEnvFormSubmit() {
+            const name = envNameInput.value.trim(); const tenantId = envTenantIdInput.value.trim(); const companyId = envCompanyIdInput.value.trim();
+            if (!name) { showMessage("Nom environnement requis.", true); return; }
+            if (editingEnvId !== null) {
+                const envIndex = companyEnvironments.findIndex(env => env.id === editingEnvId);
+                if (envIndex !== -1) { companyEnvironments[envIndex] = { ...companyEnvironments[envIndex], name, tenantId, companyId }; showMessage("Env màj.", false); }
+                else { showMessage("Erreur màj env.", true); } resetEnvForm();
+            } else {
+                const newEnv = { id: Date.now() + Math.random(), name, tenantId, companyId }; companyEnvironments.push(newEnv);
+                resetEnvForm(); showMessage("Env ajouté.", false);
+            }
+            saveDataToLocalStorage(); renderEnvironmentList(); populateEnvironmentSelector();
+        }
+        function removeEnvironment(index) {
+            if (index >= 0 && index < companyEnvironments.length) {
+                if (editingEnvId === companyEnvironments[index].id) { resetEnvForm(); }
+                companyEnvironments.splice(index, 1); saveDataToLocalStorage(); renderEnvironmentList(); populateEnvironmentSelector();
+                showMessage("Env supprimé.", false);
+            }
+        }
+        function applyEnvironment(event) {
+            const selectedEnvId = event.target.value; if (!selectedEnvId) return;
+            const selectedEnv = companyEnvironments.find(env => env.id == selectedEnvId); if (!selectedEnv) return;
+            let paramsChanged = false;
+            if (parameters.tenant_id !== selectedEnv.tenantId) { parameters.tenant_id = selectedEnv.tenantId; paramsChanged = true; }
+            if (parameters.company_id !== selectedEnv.companyId) { parameters.company_id = selectedEnv.companyId; paramsChanged = true; }
+            const tenantInput = parametersContainer.querySelector('#param-tenant_id'); if (tenantInput) tenantInput.value = selectedEnv.tenantId;
+            const companyInput = parametersContainer.querySelector('#param-company_id'); if (companyInput) companyInput.value = selectedEnv.companyId;
+            if (paramsChanged) { saveDataToLocalStorage(); renderQueries(); showMessage(`Env "${selectedEnv.name}" appliqué.`, false); }
+        }
+        function clearAllParameters() {
+             const paramInputs = parametersContainer.querySelectorAll('.param-input, input[type="color"]');
+             paramInputs.forEach(input => {
+                 const paramName = input.dataset.paramName;
+                 if (paramName) {
+                     input.value = (input.type === 'color') ? '#000000' : '';
+                     parameters[paramName] = (input.type === 'color') ? '#000000' : '';
+                     if (input.type === 'color') {
+                         const hexDisplay = parametersContainer.querySelector(`#hex-${paramName}`);
+                         if (hexDisplay) hexDisplay.textContent = '#000000';
+                     }
+                 }
+             });
+             saveDataToLocalStorage(); renderQueries(); showMessage('Valeurs paramètres visibles effacées.', false);
+        }
+
+        // --- Collapsible Section Functions ---
+        function toggleSection(headerElement) {
+            const targetId = headerElement.dataset.collapsibleTarget;
+            const contentElement = document.getElementById(targetId);
+            const iconElement = headerElement.querySelector('.toggle-icon');
+            if (!contentElement || !iconElement) { console.error("Element pliable ou icone non trouvé pour", targetId); return; }
+            const isCollapsed = contentElement.classList.toggle('collapsed');
+            iconElement.classList.toggle('collapsed', isCollapsed);
+            collapsedSections[targetId] = isCollapsed;
+            saveDataToLocalStorage();
+        }
+        function applyInitialCollapsedStates() {
+            const headers = document.querySelectorAll('.collapsible-header');
+            headers.forEach(header => {
+                const targetId = header.dataset.collapsibleTarget;
+                const contentElement = document.getElementById(targetId);
+                const iconElement = header.querySelector('.toggle-icon');
+                if (!contentElement || !iconElement) return;
+                const shouldBeCollapsed = collapsedSections[targetId] === true;
+                // Applique l'état sans transition au chargement
+                contentElement.style.transition = 'none';
+                iconElement.style.transition = 'none';
+                contentElement.classList.toggle('collapsed', shouldBeCollapsed);
+                iconElement.classList.toggle('collapsed', shouldBeCollapsed);
+                // Réactive les transitions après un court délai
+                setTimeout(() => {
+                    contentElement.style.transition = '';
+                    iconElement.style.transition = '';
+                }, 50);
+            });
+        }
+        function initializeCollapsibleSections() {
+            const headers = document.querySelectorAll('.collapsible-header');
+            headers.forEach(header => {
+                if (!header.dataset.listenerAdded) {
+                    header.addEventListener('click', () => toggleSection(header));
+                    header.dataset.listenerAdded = 'true';
+                }
+            });
+             applyInitialCollapsedStates();
+        }
+
+        // --- Import/Export & Local Storage ---
+        function exportData() {
+            if (originalQueries.length === 0 && faqItems.length === 0 && companyEnvironments.length === 0) { showMessage("Rien à exporter.", true); return; }
+            const dataToExport = { queries: originalQueries, faq: faqItems, environments: companyEnvironments, parameters: parameters, collapsed: collapsedSections };
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' }); const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a'); link.href = url; link.download = 'gestionnaire_sql_faq_env_data.json';
+            document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+            showMessage("Données exportées.", false);
+        }
+        function handleFileImport(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (typeof importedData !== 'object' || importedData === null) { throw new Error("Fichier JSON invalide."); }
+                    let qLoaded = 0, fLoaded = 0, eLoaded = 0;
+                    if (Array.isArray(importedData.queries)) {
+                        originalQueries = importedData.queries.filter(item => typeof item === 'object' && item !== null && typeof item.text === 'string' && typeof item.name === 'string')
+                            .map(item => ({ id: Date.now() + Math.random() * 1000, name: item.name, category: item.category || DEFAULT_CATEGORY, text: item.text, comment: item.comment || '' }));
+                        qLoaded = originalQueries.length;
+                    } else { originalQueries = []; }
+                     if (Array.isArray(importedData.faq)) {
+                         faqItems = importedData.faq.filter(item => typeof item === 'object' && item !== null && typeof item.question === 'string' && typeof item.answer === 'string')
+                            .map(item => ({ id: Date.now() + Math.random()*1000, question: item.question, answer: item.answer }));
+                         fLoaded = faqItems.length;
+                     } else { faqItems = []; }
+                     if (Array.isArray(importedData.environments)) {
+                         companyEnvironments = importedData.environments.filter(item => typeof item === 'object' && item !== null && typeof item.name === 'string')
+                            .map(item => ({ id: Date.now() + Math.random()*1000, name: item.name, tenantId: item.tenantId || '', companyId: item.companyId || '' }));
+                         eLoaded = companyEnvironments.length;
+                     } else { companyEnvironments = []; }
+                    parameters = importedData.parameters || {};
+                    collapsedSections = importedData.collapsed || {};
+                    currentQueryCategory = 'all'; currentMainTab = 'queries';
+                    saveDataToLocalStorage(); updateAllUI();
+                    showMessage(`Import: ${qLoaded} req, ${fLoaded} FAQ, ${eLoaded} env chargés.`, false);
+                } catch (error) { console.error("Erreur import:", error); showMessage(`Erreur import: ${error.message}`, true); }
+                finally { importFileInput.value = null; }
+            };
+            reader.onerror = (e) => { console.error("Erreur lecture fichier:", e); showMessage("Impossible de lire le fichier.", true); importFileInput.value = null; };
+            reader.readAsText(file);
+        }
+        function saveDataToLocalStorage() {
+            const data = { queries: originalQueries, faq: faqItems, environments: companyEnvironments, parameters: parameters, collapsed: collapsedSections };
+            try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data)); }
+            catch (e) { console.error("Erreur sauvegarde LS:", e); }
+        }
+        function loadDataFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    originalQueries = data.queries || []; faqItems = data.faq || []; companyEnvironments = data.environments || [];
+                    parameters = data.parameters || {}; collapsedSections = data.collapsed || {};
+                } else {
+                    originalQueries = []; faqItems = []; companyEnvironments = []; parameters = {}; collapsedSections = {};
+                }
+            } catch (e) {
+                console.error("Erreur chargement LS:", e); localStorage.removeItem(LOCAL_STORAGE_KEY);
+                originalQueries = []; faqItems = []; companyEnvironments = []; parameters = {}; collapsedSections = {};
+                showMessage("Erreur chargement données locales. Réinitialisation.", true);
+            }
+        }
+
+        // --- Initialisation de l'Application ---
+        function initializeApp() {
+            loadDataFromLocalStorage();
+            // Ajout des écouteurs
+            submitBtn.addEventListener('click', handleQueryFormSubmit);
+            cancelEditBtn.addEventListener('click', resetQueryForm);
+            faqSubmitBtn.addEventListener('click', handleFAQFormSubmit);
+            faqCancelEditBtn.addEventListener('click', resetFAQForm);
+            envSubmitBtn.addEventListener('click', handleEnvFormSubmit);
+            envCancelEditBtn.addEventListener('click', resetEnvForm);
+            environmentSelector.addEventListener('change', applyEnvironment);
+            exportBtn.addEventListener('click', exportData);
+            importBtn.addEventListener('click', () => importFileInput.click());
+            importFileInput.addEventListener('change', handleFileImport);
+            clearParamsBtn.addEventListener('click', clearAllParameters);
+            // Keypress
+            [newQueryTextInput, newQueryCommentInput].forEach(el => el.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleQueryFormSubmit(); }}));
+            [faqQuestionInput, faqAnswerInput].forEach(el => el.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleFAQFormSubmit(); }}));
+            [envNameInput, envTenantIdInput, envCompanyIdInput].forEach(el => el.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEnvFormSubmit(); }}));
+
+            renderMainTabs(); // Rendu initial
+        }
+
+        // --- Démarrage ---
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+    </script>
+
+</body>
+</html>
