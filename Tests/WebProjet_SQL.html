@@ -122,7 +122,6 @@
         <div id="main-tab-container" class="tab-container"></div>
 
         <div id="query-section" class="main-section">
-
             <div class="form-section-container" id="query-form-wrapper">
                 <div class="collapsible-header" data-collapsible-target="add-edit-form-content">
                     <h2 id="form-title" class="text-xl font-semibold text-gray-700">Ajouter/Modifier Requête</h2>
@@ -131,36 +130,15 @@
                 <div id="add-edit-form-content" class="collapsible-content">
                     <div id="add-edit-form">
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label for="new-query-name" class="block text-sm font-medium text-gray-700 mb-1">Nom / Titre</label>
-                                <input type="text" id="new-query-name" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: Tâches urgentes projet X">
-                            </div>
-                            <div>
-                                <label for="new-query-category" class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-                                <input type="text" id="new-query-category" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: Projets, Admin, Debug">
-                            </div>
+                            <div><label for="new-query-name" class="block text-sm font-medium text-gray-700 mb-1">Nom / Titre</label><input type="text" id="new-query-name" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: Tâches urgentes projet X"></div>
+                            <div><label for="new-query-category" class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label><input type="text" id="new-query-category" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: Projets, Admin, Debug"></div>
                         </div>
-                        <div class="mb-4">
-                            <label for="new-query-text" class="block text-sm font-medium text-gray-700 mb-1">Requête SQL</label>
-                            <p class="text-xs text-gray-500 mb-2">Utilisez `{param}` pour les paramètres (ex: `{color}`).</p>
-                            <textarea id="new-query-text" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" rows="5" placeholder="SELECT * FROM elements WHERE color = '{color}';"></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <label for="new-query-comment" class="block text-sm font-medium text-gray-700 mb-1">Commentaire (optionnel)</label>
-                            <textarea id="new-query-comment" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="3" placeholder="Ajouter une note ou une explication..."></textarea>
-                        </div>
-                        <div id="form-buttons" class="mt-4 flex items-center space-x-3">
-                            <button id="submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
-                                Ajouter la Requête
-                            </button>
-                            <button id="cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
-                                Annuler
-                            </button>
-                        </div>
+                        <div class="mb-4"><label for="new-query-text" class="block text-sm font-medium text-gray-700 mb-1">Requête SQL</label><p class="text-xs text-gray-500 mb-2">Utilisez `{param}` (ex: `{color}`).</p><textarea id="new-query-text" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" rows="5" placeholder="SELECT * FROM elements WHERE color = '{color}';"></textarea></div>
+                        <div class="mb-4"><label for="new-query-comment" class="block text-sm font-medium text-gray-700 mb-1">Commentaire (optionnel)</label><textarea id="new-query-comment" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="3" placeholder="Ajouter une note..."></textarea></div>
+                        <div id="form-buttons" class="mt-4 flex items-center space-x-3"><button id="submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">Ajouter la Requête</button><button id="cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">Annuler</button></div>
                     </div>
                 </div>
             </div>
-
             <div id="parameters-section-wrapper" class="form-section-container mb-8">
                  <div class="collapsible-header" data-collapsible-target="parameters-section-content">
                      <h2 class="text-xl font-semibold text-gray-700">Environnement & Paramètres</h2>
@@ -168,23 +146,12 @@
                  </div>
                  <div id="parameters-section-content" class="collapsible-content">
                      <div id="parameters-section">
-                        <div id="env-selector-container" class="mb-6">
-                            <label for="environment-selector" class="block text-sm font-medium text-gray-700 mb-1">Appliquer un Environnement :</label>
-                            <select id="environment-selector" class="w-full md:w-1/2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"></select>
-                        </div>
-                        <div class="flex justify-between items-center mb-3 mt-4">
-                            <h3 class="text-lg font-medium text-gray-600">Paramètres (Catégorie Actuelle)</h3>
-                            <button id="clear-params-btn" class="hidden bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md text-xs transition duration-150 ease-in-out">
-                                Effacer Valeurs
-                            </button>
-                        </div>
-                        <div id="parameters-container" class="space-y-3 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
-                            <p id="no-params-msg" class="text-gray-500 italic">Aucun paramètre.</p>
-                             </div>
+                        <div id="env-selector-container" class="mb-6"><label for="environment-selector" class="block text-sm font-medium text-gray-700 mb-1">Appliquer un Environnement :</label><select id="environment-selector" class="w-full md:w-1/2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"></select></div>
+                        <div class="flex justify-between items-center mb-3 mt-4"><h3 class="text-lg font-medium text-gray-600">Paramètres (Catégorie Actuelle)</h3><button id="clear-params-btn" class="hidden bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md text-xs transition duration-150 ease-in-out">Effacer Valeurs</button></div>
+                        <div id="parameters-container" class="space-y-3 p-4 bg-indigo-50 border border-indigo-100 rounded-lg"><p id="no-params-msg" class="text-gray-500 italic">Aucun paramètre.</p></div>
                     </div>
                  </div>
             </div>
-
             <div id="queries-list-section-wrapper" class="list-section-wrapper mb-6">
                  <div class="collapsible-header" data-collapsible-target="queries-list-section-content">
                      <h2 class="text-xl font-semibold text-gray-700">Requêtes Enregistrées</h2>
@@ -192,48 +159,24 @@
                  </div>
                  <div id="queries-list-section-content" class="collapsible-content">
                     <div id="queries-list-section">
-                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
-                             <div></div> <div class="flex-shrink-0 space-x-2">
-                                 <button id="import-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 rounded-md text-sm transition duration-150 ease-in-out">
-                                     Importer Tout
-                                 </button>
-                                 <button id="export-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1 px-3 rounded-md text-sm transition duration-150 ease-in-out">
-                                     Exporter Tout
-                                 </button>
-                                 <input type="file" id="import-file-input" accept=".json">
-                             </div>
-                        </div>
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3"><div></div><div class="flex-shrink-0 space-x-2"><button id="import-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 rounded-md text-sm transition duration-150 ease-in-out">Importer Tout</button><button id="export-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1 px-3 rounded-md text-sm transition duration-150 ease-in-out">Exporter Tout</button><input type="file" id="import-file-input" accept=".json"></div></div>
                         <div id="category-tab-container" class="tab-container"></div>
-                        <div id="queries-list" class="space-y-3">
-                            <p id="no-queries-msg" class="text-gray-500 italic p-4">Aucune requête.</p>
-                        </div>
+                        <div id="queries-list" class="space-y-3"><p id="no-queries-msg" class="text-gray-500 italic p-4">Aucune requête.</p></div>
                     </div>
                  </div>
             </div>
-        </div> <div id="faq-section" class="main-section">
-            <div class="form-section-container" id="faq-form-wrapper">
+        </div>
+        <div id="faq-section" class="main-section">
+             <div class="form-section-container" id="faq-form-wrapper">
                  <div class="collapsible-header" data-collapsible-target="faq-form-content">
                      <h2 id="faq-form-title" class="text-xl font-semibold text-gray-700">Ajouter/Modifier FAQ</h2>
                      <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
                  </div>
                  <div id="faq-form-content" class="collapsible-content">
                      <div id="faq-form-container">
-                         <div class="mb-4">
-                             <label for="faq-question" class="block text-sm font-medium text-gray-700 mb-1">Question / Titre</label>
-                             <textarea id="faq-question" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="2" placeholder="Question fréquente ou titre de la procédure..."></textarea>
-                         </div>
-                         <div class="mb-4">
-                             <label for="faq-answer" class="block text-sm font-medium text-gray-700 mb-1">Réponse / Procédure</label>
-                             <textarea id="faq-answer" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="6" placeholder="Réponse détaillée ou étapes de la procédure..."></textarea>
-                         </div>
-                         <div id="faq-form-buttons" class="mt-4 flex items-center space-x-3">
-                            <button id="faq-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
-                                Ajouter à la FAQ
-                            </button>
-                            <button id="faq-cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
-                                Annuler
-                            </button>
-                        </div>
+                         <div class="mb-4"><label for="faq-question" class="block text-sm font-medium text-gray-700 mb-1">Question / Titre</label><textarea id="faq-question" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="2" placeholder="Question fréquente..."></textarea></div>
+                         <div class="mb-4"><label for="faq-answer" class="block text-sm font-medium text-gray-700 mb-1">Réponse / Procédure</label><textarea id="faq-answer" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" rows="6" placeholder="Réponse détaillée..."></textarea></div>
+                         <div id="faq-form-buttons" class="mt-4 flex items-center space-x-3"><button id="faq-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">Ajouter à la FAQ</button><button id="faq-cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">Annuler</button></div>
                     </div>
                  </div>
             </div>
@@ -243,12 +186,11 @@
                      <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
                  </div>
                  <div id="faq-list-section-content" class="collapsible-content">
-                    <div id="faq-list" class="space-y-3">
-                        <p id="no-faq-msg" class="text-gray-500 italic p-4">Aucune entrée FAQ.</p>
-                    </div>
+                    <div id="faq-list" class="space-y-3"><p id="no-faq-msg" class="text-gray-500 italic p-4">Aucune entrée FAQ.</p></div>
                  </div>
             </div>
-        </div> <div id="env-section" class="main-section">
+        </div>
+        <div id="env-section" class="main-section">
             <div class="form-section-container" id="env-form-wrapper">
                   <div class="collapsible-header" data-collapsible-target="env-form-content">
                      <h2 id="env-form-title" class="text-xl font-semibold text-gray-700">Ajouter/Modifier Environnement</h2>
@@ -257,27 +199,11 @@
                  <div id="env-form-content" class="collapsible-content">
                      <div id="env-form-container">
                          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                             <div>
-                                 <label for="env-name" class="block text-sm font-medium text-gray-700 mb-1">Nom Environnement</label>
-                                 <input type="text" id="env-name" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: Production Client A">
-                             </div>
-                             <div>
-                                 <label for="env-tenant-id" class="block text-sm font-medium text-gray-700 mb-1">Tenant ID</label>
-                                 <input type="text" id="env-tenant-id" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="ID du tenant">
-                             </div>
-                             <div>
-                                 <label for="env-company-id" class="block text-sm font-medium text-gray-700 mb-1">Company ID</label>
-                                 <input type="text" id="env-company-id" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="ID de la compagnie">
-                             </div>
+                             <div><label for="env-name" class="block text-sm font-medium text-gray-700 mb-1">Nom Environnement</label><input type="text" id="env-name" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: Prod Client A"></div>
+                             <div><label for="env-tenant-id" class="block text-sm font-medium text-gray-700 mb-1">Tenant ID</label><input type="text" id="env-tenant-id" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="ID tenant"></div>
+                             <div><label for="env-company-id" class="block text-sm font-medium text-gray-700 mb-1">Company ID</label><input type="text" id="env-company-id" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="ID compagnie"></div>
                          </div>
-                         <div id="env-form-buttons" class="mt-4 flex items-center space-x-3">
-                            <button id="env-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
-                                Ajouter Environnement
-                            </button>
-                            <button id="env-cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">
-                                Annuler
-                            </button>
-                        </div>
+                         <div id="env-form-buttons" class="mt-4 flex items-center space-x-3"><button id="env-submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">Ajouter Env</button><button id="env-cancel-edit-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-md transition duration-150 ease-in-out">Annuler</button></div>
                     </div>
                  </div>
             </div>
@@ -287,12 +213,11 @@
                      <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
                  </div>
                  <div id="env-list-section-content" class="collapsible-content">
-                    <div id="env-list" class="space-y-3">
-                        <p id="no-env-msg" class="text-gray-500 italic p-4">Aucun environnement défini.</p>
-                    </div>
+                    <div id="env-list" class="space-y-3"><p id="no-env-msg" class="text-gray-500 italic p-4">Aucun environnement.</p></div>
                  </div>
             </div>
-        </div> </div> <script>
+        </div>
+    </div> <script>
         // --- DOM Elements ---
         const mainTabContainer = document.getElementById('main-tab-container');
         const querySection = document.getElementById('query-section');
@@ -342,19 +267,11 @@
         const importFileInput = document.getElementById('import-file-input');
         const messageArea = document.getElementById('message-area');
 
-
         // --- Application State ---
-        let originalQueries = [];
-        let faqItems = [];
-        let companyEnvironments = [];
-        let parameters = {};
-        let currentMainTab = 'queries';
-        let currentQueryCategory = 'all';
-        let editingQueryId = null;
-        let editingFAQId = null;
-        let editingEnvId = null;
-        let collapsedSections = {};
-        const DEFAULT_CATEGORY = 'Général';
+        let originalQueries = []; let faqItems = []; let companyEnvironments = []; let parameters = {};
+        let currentMainTab = 'queries'; let currentQueryCategory = 'all';
+        let editingQueryId = null; let editingFAQId = null; let editingEnvId = null;
+        let collapsedSections = {}; const DEFAULT_CATEGORY = 'Général';
         const LOCAL_STORAGE_KEY = 'sqlFaqEnvManagerData_v3';
 
         // --- SVG Icons ---
@@ -363,7 +280,6 @@
         const checkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
         const editIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`;
         const arrowDownIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>`;
-
 
         // --- Fonctions Utilitaires ---
         function showMessage(text, isError = false) {
@@ -468,7 +384,7 @@
                     const escapedPlaceholder = placeholder.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); const regex = new RegExp(escapedPlaceholder, 'g');
                     let replacement;
                     if (paramName === 'color' && value && /^#[0-9A-F]{6}$/i.test(value)) {
-                        replacement = `<span class="inline-block w-3 h-3 rounded-sm mr-1" style="background-color: ${value}; border: 1px solid #ccc;"></span><span class="param-highlight">${value}</span>`;
+                        replacement = `<span class="inline-block w-3 h-3 rounded-sm mr-1 align-middle" style="background-color: ${value}; border: 1px solid #ccc;"></span><span class="param-highlight">${value}</span>`; // align-middle pour aligner le carré
                     } else {
                          replacement = (value !== undefined && value !== '') ? `<span class="param-highlight">${value}</span>` : `<span class="param-highlight">{${paramName}}</span>`;
                     }
@@ -538,15 +454,12 @@
                 tabBtn.onclick = () => { currentMainTab = tab.id; renderMainTabs(); };
                 mainTabContainer.appendChild(tabBtn);
             });
-             // Show/Hide main sections
              querySection.style.display = (currentMainTab === 'queries') ? 'block' : 'none';
              faqSection.style.display = (currentMainTab === 'faq') ? 'block' : 'none';
              envSection.style.display = (currentMainTab === 'environments') ? 'block' : 'none';
-             // Call initial render/setup for the active tab
              if (currentMainTab === 'queries') { renderQueryCategoryTabs(); updateParametersUI(); renderQueries(); populateEnvironmentSelector(); }
              else if (currentMainTab === 'faq') { renderFAQList(); }
              else if (currentMainTab === 'environments') { renderEnvironmentList(); }
-             // Initialize collapsible sections AFTER the correct section is visible
              initializeCollapsibleSections();
         }
 
@@ -715,16 +628,11 @@
                 const iconElement = header.querySelector('.toggle-icon');
                 if (!contentElement || !iconElement) return;
                 const shouldBeCollapsed = collapsedSections[targetId] === true;
-                // Applique l'état sans transition au chargement
                 contentElement.style.transition = 'none';
                 iconElement.style.transition = 'none';
                 contentElement.classList.toggle('collapsed', shouldBeCollapsed);
                 iconElement.classList.toggle('collapsed', shouldBeCollapsed);
-                // Réactive les transitions après un court délai
-                setTimeout(() => {
-                    contentElement.style.transition = '';
-                    iconElement.style.transition = '';
-                }, 50);
+                setTimeout(() => { contentElement.style.transition = ''; iconElement.style.transition = ''; }, 50);
             });
         }
         function initializeCollapsibleSections() {
@@ -774,7 +682,8 @@
                     parameters = importedData.parameters || {};
                     collapsedSections = importedData.collapsed || {};
                     currentQueryCategory = 'all'; currentMainTab = 'queries';
-                    saveDataToLocalStorage(); updateAllUI();
+                    saveDataToLocalStorage();
+                    updateAllUI(); // Appel corrigé
                     showMessage(`Import: ${qLoaded} req, ${fLoaded} FAQ, ${eLoaded} env chargés.`, false);
                 } catch (error) { console.error("Erreur import:", error); showMessage(`Erreur import: ${error.message}`, true); }
                 finally { importFileInput.value = null; }
@@ -804,6 +713,13 @@
             }
         }
 
+        // --- Helper function to update all UI parts ---
+        // !! CORRECTION : Ajout de la définition de updateAllUI !!
+        function updateAllUI() {
+            renderMainTabs(); // This handles rendering the correct section's content and initializing collapsible sections
+        }
+
+
         // --- Initialisation de l'Application ---
         function initializeApp() {
             loadDataFromLocalStorage();
@@ -824,7 +740,7 @@
             [faqQuestionInput, faqAnswerInput].forEach(el => el.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleFAQFormSubmit(); }}));
             [envNameInput, envTenantIdInput, envCompanyIdInput].forEach(el => el.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEnvFormSubmit(); }}));
 
-            renderMainTabs(); // Rendu initial
+            updateAllUI(); // Rendu initial
         }
 
         // --- Démarrage ---
@@ -834,3 +750,4 @@
 
 </body>
 </html>
+
