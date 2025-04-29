@@ -100,7 +100,7 @@
         <table class="calendar"> <thead> <tr> <th>Lun</th> <th>Mar</th> <th>Mer</th> <th>Jeu</th> <th>Ven</th> <th>Sam</th> <th>Dim</th> </tr> </thead> <tbody id="calendarDays"></tbody> </table>
         <div class="legend" id="legendContainer">
             <div class="legend-item"><span class="legend-color legend-color-me"></span> : Mélina avec moi</div>
-            <div class="legend-item"><span class="legend-color legend-color-mother"></span> : Mélina chez sa mère</div>
+            <div class="legend-item"><span class="legend-color legend-color-mother"></span> : Mélina chez sa Maman</div>
             <div class="legend-item">🖱️🖱️ Double-clic : Gérer Présence / Événements / Icônes</div>
             <div class="legend-item">✨ Tapez 'ICON' (double-clic) pour icône seule grand format</div>
          </div>
@@ -160,161 +160,188 @@
              manageEventsLoop(storedData[date], date, cell);
          }
 
-
-        // *** MODIFICATION : manageEventsLoop inclut maintenant la gestion de présence ***
+// *** NOUVELLE VERSION V5 : manageEventsLoop avec système de codes ***
         function manageEventsLoop(currentData, date, cell) {
-            const currentEventsText = currentData.events.length > 0
-                ? currentData.events.map((ev, i) => `${i + 1}: ${ev.icon || '▫️'} ${ev.text}`).join('\n')
-                : '(Aucun événement)';
+            // Préparation des icônes pour les raccourcis (index réels)
+            const iconIndexSchool = 15; // 💼
+            const iconIndexHome = 14;   // 🏠
+            const iconSchool = availableIcons.length > iconIndexSchool ? availableIcons[iconIndexSchool] : '❓';
+            const iconHome = availableIcons.length > iconIndexHome ? availableIcons[iconIndexHome] : '❓';
 
-            // Affichage du statut de présence actuel
+            // Construction du texte du prompt
             let presenceStatus = "Présence: Aucune";
             if (currentData.presence === 'me') presenceStatus = "Présence: Moi (Jaune)";
-            else if (currentData.presence === 'mother') presenceStatus = "Présence: Mère (Rose)";
+            else if (currentData.presence === 'mother') presenceStatus = "Présence: Maman (Rose)";
 
-            // Icônes pour raccourcis
-            const icon14 = availableIcons.length > 14 ? availableIcons[14] : '❓';
-            const icon15 = availableIcons.length > 15 ? availableIcons[15] : '❓';
+            const currentEventsText = currentData.events.length > 0
+                ? `Événements:\n` + currentData.events.map((ev, i) => ` ${i + 1}: ${ev.icon || '▫️'} ${ev.text}`).join('\n')
+                : 'Aucun événement.';
 
-            // Prompt réorganisé
-            const actionPrompt = `${presenceStatus}\n${currentEventsText}\n\nQue faire ?\n` +
-                                 `--- Événements / Icônes ---\n` +
-                                 `1: Ajouter Texte (+Icône)\n` +
-                                 `2: Ajouter Icône seule (Choisir)\n` +
-                                 `3: Ajouter ${icon14} seule rapid.\n` +
-                                 `4: Ajouter ${icon15} seule rapid.\n` +
-                                 `--- Présence ---\n` +
-                                 `5: Marquer 'Moi' (Jaune)\n` +
-                                 `6: Marquer 'Mère' (Rose)\n` +
-                                 `7: Enlever Couleur Présence\n` +
-                                 `--- Gestion ---\n` +
-                                 `8: Supprimer un événement\n` +
-                                 `9: Effacer tous les événements\n` +
-                                 `(Laissez vide ou Annuler pour TERMINER)`;
-            const actionInput = prompt(actionPrompt, '');
+            const promptText = `${presenceStatus}\n${currentEventsText}\n\n` +
+                               `Entrez un code:\n` +
+                               `--- Raccourcis (Présence + Icône ${iconSchool} ou ${iconHome}) ---\n` +
+                               ` M5: Maman+${iconSchool}   P5: Papa+${iconSchool}\n` +
+                               ` M6: Maman+${iconHome}    P6: Papa+${iconHome}\n` +
+                               `--- Présence Seule ---\n` +
+                               ` P: Papa   M: Maman   N: Aucune\n` +
+                               `--- Événements / Icônes ---\n` +
+                               ` T: Ajouter Texte (+Icône)\n` +
+                               ` I: Ajouter Icône seule\n` +
+                               ` R: Supprimer événement\n` +
+                               ` C: Effacer tous événements\n` +
+                               `(Laissez vide ou Annuler pour quitter)`;
 
-            if (actionInput === null || actionInput.trim() === '') {
-                // L'utilisateur a terminé, on sauvegarde et met à jour l'affichage une dernière fois
+            const input = prompt(promptText, "");
+
+            // Quitter si vide ou Annuler
+            if (input === null || input.trim() === '') {
+                console.log("Action annulée ou vide.");
+                // On sauvegarde quand même au cas où des changements précédents étaient en attente
                 cleanAndSaveData(date);
                 applyDayData(cell, currentData);
-                console.log("Fin gestion événements.");
                 return;
             }
 
-            const choice = parseInt(actionInput.trim());
+            const code = input.trim().toUpperCase();
+            let needsSaveAndUpdate = true; // La plupart des actions modifient les données
 
-            switch (choice) {
-                // --- CAS Événements / Icônes (1-4) ---
-                 case 1: // Ajouter Texte (+Icône)
-                    console.log("Action: Ajouter Texte (+Icône)");
+            console.log(`Code entré: ${code}`);
+
+            switch (code) {
+                // --- Raccourcis Présence + Icône (remplace les événements existants) ---
+                case 'M5':
+                    currentData.presence = 'mother';
+                    if (iconSchool !== '❓') currentData.events = [{ text: "", icon: iconSchool }]; else currentData.events = [];
+                    console.log("Action: Maman + École");
+                    break;
+                case 'M6':
+                    currentData.presence = 'mother';
+                    if (iconHome !== '❓') currentData.events = [{ text: "", icon: iconHome }]; else currentData.events = [];
+                    console.log("Action: Maman + Maison");
+                    break;
+                case 'P5':
+                    currentData.presence = 'me';
+                     if (iconSchool !== '❓') currentData.events = [{ text: "", icon: iconSchool }]; else currentData.events = [];
+                    console.log("Action: Papa + École");
+                    break;
+                case 'P6':
+                    currentData.presence = 'me';
+                    if (iconHome !== '❓') currentData.events = [{ text: "", icon: iconHome }]; else currentData.events = [];
+                    console.log("Action: Papa + Maison");
+                    break;
+
+                // --- Présence Seule ---
+                case 'P':
+                    currentData.presence = 'me';
+                    console.log("Action: Présence Papa");
+                    break;
+                case 'M':
+                    currentData.presence = 'mother';
+                    console.log("Action: Présence Maman");
+                    break;
+                case 'N':
+                    currentData.presence = null;
+                    console.log("Action: Aucune Présence");
+                    break;
+
+                // --- Événements / Icônes ---
+                case 'T': // Ajouter Texte (+ Icône)
+                    console.log("Action: Ajouter Texte");
                     const newEventText = prompt("Entrez le texte de l'événement:", "");
                     if (newEventText !== null) {
                         const textToAdd = newEventText.trim();
-                        const iconPromptTextForText = `Choisissez une icône pour "${textToAdd}" (numéro ou emoji):\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`;
-                        const chosenIconInputForText = prompt(iconPromptTextForText, '0');
-                        let chosenIconForText = '';
-                        if (chosenIconInputForText !== null) {
-                             const iconIndex = parseInt(chosenIconInputForText);
-                             if (!isNaN(iconIndex) && iconIndex >= 0 && iconIndex < availableIcons.length) { chosenIconForText = availableIcons[iconIndex]; }
-                             else if (/\p{Emoji}/u.test(chosenIconInputForText)) { chosenIconForText = chosenIconInputForText; }
-                             else { chosenIconForText = availableIcons[0]; }
+                        const iconPromptT = `Icône pour "${textToAdd}" ?\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`;
+                        const iconInputT = prompt(iconPromptT, '0');
+                        let iconToAddT = '';
+                        if (iconInputT !== null) {
+                            const idx = parseInt(iconInputT);
+                            if (!isNaN(idx) && idx >= 0 && idx < availableIcons.length) iconToAddT = availableIcons[idx];
+                            else if (/\p{Emoji}/u.test(iconInputT)) iconToAddT = iconInputT;
                         }
-                        currentData.events.push({ text: textToAdd, icon: chosenIconForText });
-                        console.log("Événement ajouté:", { text: textToAdd, icon: chosenIconForText });
-                        // Après ajout, on réaffiche le menu pour potentiellement d'autres actions
-                        manageEventsLoop(currentData, date, cell);
-                    } else {
-                         console.log("Ajout Texte annulé.");
-                         manageEventsLoop(currentData, date, cell); // Retour au menu
-                    }
-                    return; // Important pour sortir du switch et laisser la récursion gérer la suite
+                        currentData.events.push({ text: textToAdd, icon: iconToAddT });
+                        console.log("Événement ajouté:", { text: textToAdd, icon: iconToAddT });
+                    } else { needsSaveAndUpdate = false; /* Annulé, pas de MAJ */ console.log("Ajout Texte annulé."); }
+                    break;
 
-                case 2: // Ajouter Icône seule (Choisir)
-                    console.log("Action: Ajouter Icône (Choisir)");
-                    const iconPromptText = `Choisissez une icône seule (numéro ou emoji):\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`;
-                    const chosenIconInput = prompt(iconPromptText, '0');
-                    let chosenIcon = '';
-                    if (chosenIconInput !== null) {
-                         const iconIndex = parseInt(chosenIconInput);
-                         if (!isNaN(iconIndex) && iconIndex >= 0 && iconIndex < availableIcons.length) { chosenIcon = availableIcons[iconIndex]; }
-                         else if (/\p{Emoji}/u.test(chosenIconInput)) { chosenIcon = chosenIconInput; }
-                         else { chosenIcon = availableIcons[0]; }
-                         if (chosenIcon !== '') { currentData.events.push({ text: "", icon: chosenIcon }); console.log("Icône seule ajoutée:", { text: "", icon: chosenIcon });}
-                         else { console.log("Ajout annulé (aucune icône choisie)."); }
-                    } else { console.log("Ajout Icône annulé."); }
-                    manageEventsLoop(currentData, date, cell); // Retour au menu
-                    return;
+                case 'I': // Ajouter Icône seule (Choisir)
+                    console.log("Action: Ajouter Icône seule");
+                    const iconPromptI = `Choisir icône seule:\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`;
+                    const iconInputI = prompt(iconPromptI, '0');
+                    let chosenIconI = '';
+                    if (iconInputI !== null) {
+                         const idx = parseInt(iconInputI);
+                         if (!isNaN(idx) && idx >= 0 && idx < availableIcons.length) chosenIconI = availableIcons[idx];
+                         else if (/\p{Emoji}/u.test(iconInputI)) chosenIconI = iconInputI;
+                         if (chosenIconI !== '') { currentData.events.push({ text: "", icon: chosenIconI }); console.log("Icône ajoutée:", { text: "", icon: chosenIconI }); }
+                         else { needsSaveAndUpdate = false; console.log("Ajout annulé (aucune icône choisie)."); }
+                    } else { needsSaveAndUpdate = false; console.log("Ajout Icône annulé."); }
+                    break;
 
-                case 3: // Ajouter Icône 14 (🏠) seule rapide
-                     console.log("Action: Ajouter Icône rapide 14");
-                     if (icon14 !== '❓') { currentData.events.push({ text: "", icon: icon14 }); console.log("Icône rapide ajoutée:", { text: "", icon: icon14 }); }
-                     else { alert("Erreur: Icône 14 non définie."); }
-                     manageEventsLoop(currentData, date, cell); // Retour au menu
-                     return;
-
-                case 4: // Ajouter Icône 15 (💼) seule rapide
-                     console.log("Action: Ajouter Icône rapide 15");
-                      if (icon15 !== '❓') { currentData.events.push({ text: "", icon: icon15 }); console.log("Icône rapide ajoutée:", { text: "", icon: icon15 }); }
-                      else { alert("Erreur: Icône 15 non définie."); }
-                     manageEventsLoop(currentData, date, cell); // Retour au menu
-                     return;
-
-                // --- CAS Présence (5-7) ---
-                 case 5: // Marquer 'Moi' (Jaune)
-                    console.log("Action: Marquer Présence 'Moi'");
-                    currentData.presence = 'me';
-                    manageEventsLoop(currentData, date, cell); // Réaffiche le menu avec le statut mis à jour
-                    return;
-
-                case 6: // Marquer 'Mère' (Rose)
-                    console.log("Action: Marquer Présence 'Mère'");
-                    currentData.presence = 'mother';
-                    manageEventsLoop(currentData, date, cell); // Réaffiche le menu
-                    return;
-
-                case 7: // Enlever Couleur Présence
-                    console.log("Action: Enlever Présence");
-                    currentData.presence = null;
-                    manageEventsLoop(currentData, date, cell); // Réaffiche le menu
-                    return;
-
-                // --- CAS Gestion (8-9) ---
-                 case 8: // Supprimer un événement
-                    console.log("Action: Supprimer événement");
+                case 'R': // Supprimer événement
+                    console.log("Action: Supprimer");
                     if (currentData.events.length > 0) {
-                        const removePrompt = `Entrez le NUMÉRO de l'événement à supprimer:\n${currentData.events.map((ev, i) => `${i + 1}: ${ev.icon || '▫️'} ${ev.text}`).join('\n')}`;
+                        const removePrompt = `NUMÉRO à supprimer?\n${currentData.events.map((ev, i) => `${i + 1}: ${ev.icon || '▫️'} ${ev.text}`).join('\n')}`;
                         const removeInput = prompt(removePrompt, '');
-                        const indexToRemove = parseInt(removeInput) - 1;
-                        if (!isNaN(indexToRemove) && indexToRemove >= 0 && indexToRemove < currentData.events.length) {
-                            const removed = currentData.events.splice(indexToRemove, 1);
-                            console.log("Événement supprimé:", removed);
-                        } else if (removeInput !== null && removeInput.trim() !== '') {
-                            alert("Numéro invalide.");
-                        }
-                    } else { alert("Aucun événement à supprimer."); }
-                    manageEventsLoop(currentData, date, cell); // Retour au menu
-                    return;
+                        if (removeInput !== null) { // Seulement si pas annulé
+                             const indexToRemove = parseInt(removeInput) - 1;
+                             if (!isNaN(indexToRemove) && indexToRemove >= 0 && indexToRemove < currentData.events.length) {
+                                 currentData.events.splice(indexToRemove, 1);
+                                 console.log("Événement supprimé.");
+                             } else if (removeInput.trim() !== '') { alert("Numéro invalide."); needsSaveAndUpdate = false; }
+                             else { needsSaveAndUpdate = false; /* Vide = Annuler suppression */ }
+                        } else { needsSaveAndUpdate = false; console.log("Suppression annulée."); }
+                    } else { alert("Aucun événement à supprimer."); needsSaveAndUpdate = false; }
+                    break;
 
-                case 9: // Effacer tous les événements
-                    console.log("Action: Effacer tout");
-                    if (confirm("Êtes-vous sûr de vouloir effacer tous les événements de ce jour ?")) {
+                case 'C': // Effacer tout
+                    console.log("Action: Effacer Tout");
+                    if (confirm("Effacer tous les événements ?")) {
                         currentData.events = [];
-                        console.log("Tous les événements effacés.");
-                    }
-                     manageEventsLoop(currentData, date, cell); // Retour au menu
-                     return;
+                        console.log("Événements effacés.");
+                    } else { needsSaveAndUpdate = false; console.log("Effacement annulé."); }
+                    break;
 
-                default: // Choix invalide
-                    alert("Choix invalide.");
-                    manageEventsLoop(currentData, date, cell); // Retour au menu
-                    return;
+                default:
+                    alert(`Code "${code}" non reconnu.`);
+                    needsSaveAndUpdate = false; // Pas de changement si code invalide
+                    break;
             }
-            // Note: Normalement on ne devrait pas arriver ici à cause des 'return' dans chaque case
-            // Mais par sécurité, on sauvegarde et met à jour si on sort du switch autrement.
-            // cleanAndSaveData(date);
-            // applyDayData(cell, currentData);
+
+            // Sauvegarde et mise à jour si une action a été effectuée
+            if (needsSaveAndUpdate) {
+                cleanAndSaveData(date);
+                applyDayData(cell, currentData);
+            }
         }
 
+
+        // Le reste des fonctions (initDayData, cleanAndSaveData, applyBackground, export image, navigation...)
+        // sont inchangées par rapport à la V4.5 corrigée.
+        // ... (Coller ici les autres fonctions si vous générez le fichier complet) ...
+        function initDayData(date) { /* ... */ if (!storedData[date]) { storedData[date] = { presence: null, events: [] }; } else if (!Array.isArray(storedData[date].events)) { storedData[date].events = []; } }
+        function cleanAndSaveData(date) { /* ... */ const data = storedData[date]; if(data && data.events) { data.events = data.events.filter(event => event.text !== '' || event.icon !== ''); } if (data && data.presence === null && (!data.events || data.events.length === 0)) { delete storedData[date]; } localStorage.setItem(STORAGE_KEY, JSON.stringify(storedData)); }
+        function applyBackground(imageDataUrl) { /* ... */ calendarContainer.style.backgroundImage = imageDataUrl ? `url(${imageDataUrl})` : 'none'; }
+        changeBackgroundLabel.addEventListener('click', () => backgroundInput.click());
+        backgroundInput.addEventListener('change', (event) => { /* ... */ const file = event.target.files[0]; if (!file || !file.type.startsWith('image/')) return; const reader = new FileReader(); reader.onload = (e) => { const url = e.target.result; if (url.length > 8 * 1024 * 1024) { alert("Image > 8MB..."); localStorage.removeItem('calendarBackground_v4'); applyBackground(url); } else { localStorage.setItem('calendarBackground_v4', url); applyBackground(url); } }; reader.readAsDataURL(file); event.target.value = null; });
+        removeBackgroundButton.addEventListener('click', () => { /* ... */ applyBackground(null); localStorage.removeItem('calendarBackground_v4'); });
+        const savedBackground = localStorage.getItem('calendarBackground_v4'); if (savedBackground) applyBackground(savedBackground);
+        saveAsImageButton.addEventListener('click', () => { /* ... */ const filename = `calendrier-${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}.png`; const buttonOriginalText = saveAsImageButton.textContent; saveAsImageButton.textContent = 'Génération...'; saveAsImageButton.disabled = true; const ignoreFunction = function(element) { const idsToIgnore = ['prevMonth', 'nextMonth', 'printButton', 'backgroundInput']; if (idsToIgnore.includes(element.id)) return true; if (element.classList.contains('controls-container') || element.classList.contains('legend')) return true; return false; }; const options = { scale: 2, useCORS: true, logging: false, ignoreElements: ignoreFunction }; console.log('Début capture...'); html2canvas(calendarContainer, options).then(canvas => { console.log('Canvas généré.'); const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL('image/png'); console.log('Lien créé.'); link.click(); console.log('Téléchargement lancé.'); saveAsImageButton.textContent = buttonOriginalText; saveAsImageButton.disabled = false; }).catch(error => { console.error('Erreur html2canvas:', error); alert("Erreur création image.\n" + error); saveAsImageButton.textContent = buttonOriginalText; saveAsImageButton.disabled = false; }); });
+        prevMonthButton.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
+        nextMonthButton.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
+        printButton.addEventListener('click', () => { alert("Pour l'impression classique, vérifiez les options d'impression (Plus d'options > Graphiques d'arrière-plan) pour inclure les couleurs."); window.print(); });
+
+        // --- Initialisation (avec try...catch) ---
+        try {
+            console.log("Initialisation du calendrier...");
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            console.log("Calendrier initialisé.");
+        } catch (error) {
+            console.error("Erreur lors de l'initialisation du calendrier:", error);
+            alert("Une erreur critique est survenue lors de l'affichage du calendrier. Vérifiez la console pour les détails.");
+            document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Erreur lors du chargement du calendrier. Détails dans la console.<br>${error}</div>`;
+        }
+
+    </script>
 
         // initDayData (inchangée)
         function initDayData(date) { /* ... identique ... */ if (!storedData[date]) { storedData[date] = { presence: null, events: [] }; } else if (!Array.isArray(storedData[date].events)) { storedData[date].events = []; } }
