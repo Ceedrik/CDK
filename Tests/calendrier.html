@@ -341,7 +341,6 @@
             document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Erreur lors du chargement du calendrier. Détails dans la console.<br>${error}</div>`;
         }
 
-    </script>
 
         // initDayData (inchangée)
         function initDayData(date) { /* ... identique ... */ if (!storedData[date]) { storedData[date] = { presence: null, events: [] }; } else if (!Array.isArray(storedData[date].events)) { storedData[date].events = []; } }
