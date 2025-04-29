@@ -3,66 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendrier de Mélina V4.4 - Export Image Propre</title> <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>Calendrier de Mélina V4.5 - Interaction Améliorée</title> <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
-        /* --- Styles CSS (Identiques à V4.2 / V4.3) --- */
-         :root {
+        /* --- Styles CSS --- */
+        :root { /* ... Variables inchangées ... */
             --cell-height: 120px; --day-number-size: 0.9em; --day-note-size: 0.8em;
             --color-melina-me: #fffacd; --color-melina-mother: #ffb6c1; --icon-only-size: 4.5em;
         }
         body { font-family: sans-serif; background-color: #f0f0f0; margin: 0; padding: 10px; }
-        .calendar-container {
-            background-color: white; padding: 20px; border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;
-            max-width: 1200px; margin: 10px auto; background-size: cover;
+        .calendar-container { /* ... inchangé ... */
+            background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-align: center; max-width: 1200px; margin: 10px auto; background-size: cover;
             background-position: center; background-repeat: no-repeat; position: relative;
         }
-        .controls-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .background-controls, .export-controls { display: flex; gap: 5px; }
-        .background-controls button, .button-like-label, .export-controls button {
-            font-size: 0.8em; padding: 5px 8px; cursor: pointer; display: inline-block;
-            border: 1px solid #ccc; border-radius: 4px; background-color: #f8f8f8; line-height: normal;
+        .controls-container { /* ... inchangé ... */ display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .background-controls, .export-controls { /* ... inchangé ... */ display: flex; gap: 5px; }
+        .background-controls button, .button-like-label, .export-controls button { /* ... inchangé ... */
+            font-size: 0.8em; padding: 5px 8px; cursor: pointer; display: inline-block; border: 1px solid #ccc;
+            border-radius: 4px; background-color: #f8f8f8; line-height: normal;
         }
         .button-like-label:hover { background-color: #e8e8e8; }
-        .calendar-header {
+        .calendar-header { /* ... inchangé ... */
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
             background: rgba(255, 255, 255, 0.8); padding: 5px 10px; border-radius: 5px;
         }
         .calendar-header h2 { margin: 0; font-size: 1.8em; }
         .calendar-header button { background: none; border: none; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
-        .calendar { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .calendar th, .calendar td {
+        .calendar { /* ... inchangé ... */ width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .calendar th, .calendar td { /* ... inchangé ... */
             border: 1px solid #ccc; padding: 5px; text-align: center; height: var(--cell-height);
             vertical-align: top; position: relative; overflow: hidden; background: rgba(255, 255, 255, 0.85);
         }
-        .calendar th { background-color: #e9e9e9; font-weight: bold; height: auto; padding: 10px 5px; }
-        .calendar td { cursor: pointer; transition: background-color 0.2s; }
+        .calendar th { /* ... inchangé ... */ background-color: #e9e9e9; font-weight: bold; height: auto; padding: 10px 5px; }
+        /* Modification : on retire le curseur pointeur pour le simple clic qui ne fait plus rien */
+        .calendar td { /* cursor: pointer; */ transition: background-color 0.2s; }
         .calendar td:not(.day-outside-month):hover { background-color: #f5f5f5; }
-        .day-content { display: flex; flex-direction: column; height: 100%; align-items: stretch; }
-        .day-number {
+        .day-content { /* ... inchangé ... */ display: flex; flex-direction: column; height: 100%; align-items: stretch; }
+        .day-number { /* ... inchangé ... */
             font-weight: bold; font-size: var(--day-number-size); align-self: flex-end; padding: 1px 3px;
             background: rgba(255, 255, 255, 0.7); border-radius: 3px; margin-bottom: 3px; z-index: 1;
         }
-        .day-details { flex-grow: 1; text-align: left; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; }
-        .day-note { font-size: var(--day-note-size); line-height: 1.4; word-wrap: break-word; width: 100%; }
-        .event-line { display: block; margin-bottom: 0.3em; }
-        .event-icon { display: inline-block; width: 1.5em; text-align: center; margin-right: 3px; }
-        .day-icon-only .day-details { justify-content: center; align-items: center; overflow: hidden; }
-        .day-icon-only .day-note { display: none; }
-        .day-icon-only .day-number { display: none; }
-        .icon-large { font-size: var(--icon-only-size); line-height: 1; display: block; text-align: center; }
-        .day-melina-me { background-color: var(--color-melina-me) !important; }
-        .day-melina-mother { background-color: var(--color-melina-mother) !important; }
-        .day-outside-month { color: #bbb; background-color: #fafafa !important; cursor: default; }
-        .legend { margin-top: 15px; text-align: left; font-size: 0.9em; background: rgba(255, 255, 255, 0.8); padding: 8px 12px; border-radius: 5px; display: inline-block; }
-        .legend-color { display: inline-block; width: 15px; height: 15px; margin-right: 5px; vertical-align: middle; border: 1px solid #ccc; }
-        .legend-item { margin-bottom: 5px; } .legend-item:last-child { margin-bottom: 0; }
+        .day-details { /* ... inchangé ... */ flex-grow: 1; text-align: left; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; }
+        .day-note { /* ... inchangé ... */ font-size: var(--day-note-size); line-height: 1.4; word-wrap: break-word; width: 100%; }
+        .event-line { /* ... inchangé ... */ display: block; margin-bottom: 0.3em; }
+        .event-icon { /* ... inchangé ... */ display: inline-block; width: 1.5em; text-align: center; margin-right: 3px; }
+
+        /* --- Style pour l'icône seule --- */
+        .day-icon-only .day-details { /* ... inchangé ... */ justify-content: center; align-items: center; overflow: hidden; }
+        .day-icon-only .day-note { /* ... inchangé ... */ display: none; }
+        /* *** MODIFICATION CSS : Supprimer la règle qui cache le numéro *** */
+        /* .day-icon-only .day-number { display: none; } */ /* Règle supprimée */
+        .icon-large { /* ... inchangé ... */ font-size: var(--icon-only-size); line-height: 1; display: block; text-align: center; }
+
+        /* --- Styles spécifiques Présence --- */
+        .day-melina-me { /* ... inchangé ... */ background-color: var(--color-melina-me) !important; }
+        .day-melina-mother { /* ... inchangé ... */ background-color: var(--color-melina-mother) !important; }
+
+        /* --- Autres Styles --- */
+        .day-outside-month { /* ... inchangé ... */ color: #bbb; background-color: #fafafa !important; cursor: default; }
+
+        /* --- Légende --- */
+        .legend { /* ... inchangé ... */ margin-top: 15px; text-align: left; font-size: 0.9em; background: rgba(255, 255, 255, 0.8); padding: 8px 12px; border-radius: 5px; display: inline-block; }
+        .legend-color { /* ... inchangé ... */ display: inline-block; width: 15px; height: 15px; margin-right: 5px; vertical-align: middle; border: 1px solid #ccc; }
+        .legend-item { /* ... inchangé ... */ margin-bottom: 5px; } .legend-item:last-child { margin-bottom: 0; }
         .legend-color-me { background-color: var(--color-melina-me); }
         .legend-color-mother { background-color: var(--color-melina-mother); }
-        #printButton { margin-top: 20px; padding: 10px 15px; cursor: pointer; }
-        @media print { /* Styles @media print inchangés */
-             @page { size: landscape; margin: 1cm; }
-             body { background-color: white !important; padding: 0; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        /* --- Impression --- */
+        #printButton { /* ... inchangé ... */ margin-top: 20px; padding: 10px 15px; cursor: pointer; }
+        @media print { /* ... Styles @media print inchangés (le numéro était déjà visible ici) ... */
+             @page { size: landscape; margin: 1cm; } body { background-color: white !important; padding: 0; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
              .calendar-container { box-shadow: none; width: 100%; max-width: none; margin: 0; padding: 0; border-radius: 0; background-image: none !important; }
              .controls-container, .calendar-header button, #printButton, .legend { display: none; }
              .calendar-header { justify-content: center; background: none; padding: 0 0 10px 0; } .calendar-header h2 { font-size: 1.5em; }
@@ -74,45 +84,33 @@
              .day-note { font-size: 0.75em; line-height: 1.3; display: block !important; } .event-line { margin-bottom: 0.2em; }
              .event-icon { width: 1.3em; font-size: 0.9em; margin-right: 2px;}
              .day-icon-only .day-details { justify-content: center; align-items: center; } .day-icon-only .icon-large { font-size: 2.5em !important; }
-             .day-icon-only .day-note { display: none !important; } .day-icon-only .day-number { display: block !important; }
+             .day-icon-only .day-note { display: none !important; } .day-icon-only .day-number { display: block !important; } /* Etait déjà correct ici */
         }
     </style>
 </head>
 <body>
 
     <div class="calendar-container" id="calendarContainer">
-        <div class="controls-container" id="controlsContainer"> <div class="export-controls">
-                 <button id="saveAsImageButton">Enregistrer en Image</button>
-            </div>
-            <div class="background-controls">
-                 <label for="backgroundInput" class="button-like-label">Changer fond</label>
-                 <input type="file" id="backgroundInput" accept="image/*" style="display: none;">
-                 <button id="removeBackgroundButton">Enlever fond</button>
-            </div>
+        <div class="controls-container" id="controlsContainer">
+            <div class="export-controls"> <button id="saveAsImageButton">Enregistrer en Image</button> </div>
+            <div class="background-controls"> <label for="backgroundInput" class="button-like-label">Changer fond</label> <input type="file" id="backgroundInput" accept="image/*" style="display: none;"> <button id="removeBackgroundButton">Enlever fond</button> </div>
         </div>
 
-        <div class="calendar-header">
-            <button id="prevMonth">&lt;</button> <h2 id="monthYear"></h2>
-            <button id="nextMonth">&gt;</button> </div>
-        <table class="calendar">
-            <thead>
-                <tr> <th>Lun</th> <th>Mar</th> <th>Mer</th> <th>Jeu</th> <th>Ven</th> <th>Sam</th> <th>Dim</th> </tr>
-            </thead>
-            <tbody id="calendarDays">
-                </tbody>
-        </table>
-         <div class="legend" id="legendContainer"> <div class="legend-item"><span class="legend-color legend-color-me"></span> : Mélina avec moi</div>
+        <div class="calendar-header"> <button id="prevMonth">&lt;</button> <h2 id="monthYear"></h2> <button id="nextMonth">&gt;</button> </div>
+        <table class="calendar"> <thead> <tr> <th>Lun</th> <th>Mar</th> <th>Mer</th> <th>Jeu</th> <th>Ven</th> <th>Sam</th> <th>Dim</th> </tr> </thead> <tbody id="calendarDays"></tbody> </table>
+        <div class="legend" id="legendContainer">
+            <div class="legend-item"><span class="legend-color legend-color-me"></span> : Mélina avec moi</div>
             <div class="legend-item"><span class="legend-color legend-color-mother"></span> : Mélina chez sa mère</div>
-            <div class="legend-item">🖱️ Simple clic : Change présence</div>
-            <div class="legend-item">🖱️🖱️ Double-clic : Gérer événements (texte+icône)</div>
+            <div class="legend-item">🖱️🖱️ Double-clic : Gérer Présence / Événements / Icônes</div>
             <div class="legend-item">✨ Tapez 'ICON' (double-clic) pour icône seule grand format</div>
          </div>
         <br>
-        <button id="printButton">Imprimer (Classique)</button> </div>
+        <button id="printButton">Imprimer (Classique)</button>
+    </div>
 
     <script>
         // --- Références aux éléments (inchangé) ---
-        const monthYearElement = document.getElementById('monthYear');
+        const monthYearElement = document.getElementById('monthYear'); /* ... autres ... */
         const calendarDaysElement = document.getElementById('calendarDays');
         const prevMonthButton = document.getElementById('prevMonth');
         const nextMonthButton = document.getElementById('nextMonth');
@@ -124,229 +122,28 @@
         const saveAsImageButton = document.getElementById('saveAsImageButton');
 
         // --- Données et Configuration (inchangé) ---
-        const STORAGE_KEY = 'melinaCalendarData_v4';
+        const STORAGE_KEY = 'melinaCalendarData_v4'; // On peut garder V4
         let currentDate = new Date();
         let storedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
         const availableIcons = [ '', '🎂', '⭐', '⚽', '✈️', '🎁', '⛱️', '❤️', '🎉', '📅', '✏️', '👩‍⚕️', '🏫', '🛒', '🏠', '💼', '🍽️', '😴', '🎶', '🎨', '❓' ];
 
-        // --- Fonctions JS (generateCalendar, applyDayData, handleDayClick, handleDayDoubleClick, manageEventsLoop, initDayData, cleanAndSaveData, applyBackground) ---
-        // ... (Toutes ces fonctions sont IDENTIQUES à la version V4.2 précédente) ...
-        function generateCalendar(year, month) { /* ... identique ... */ calendarDaysElement.innerHTML = ''; const date = new Date(year, month, 1); const monthName = date.toLocaleString('fr-FR', { month: 'long' }); const yearNum = date.getFullYear(); monthYearElement.textContent = `${monthName} ${yearNum}`; const firstDayOfMonth = (date.getDay() + 6) % 7; const daysInMonth = new Date(year, month + 1, 0).getDate(); const daysInPrevMonth = new Date(year, month, 0).getDate(); let dayCounter = 1; let nextMonthDayCounter = 1; for (let i = 0; i < 6; i++) { const row = document.createElement('tr'); let rowHasDaysOfMonth = false; for (let j = 0; j < 7; j++) { const cell = document.createElement('td'); const dayId = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`; if (i === 0 && j < firstDayOfMonth) { cell.classList.add('day-outside-month'); } else if (dayCounter > daysInMonth) { cell.classList.add('day-outside-month'); nextMonthDayCounter++; } else { rowHasDaysOfMonth = true; cell.dataset.date = dayId; cell.innerHTML = ` <div class="day-content"> <span class="day-number">${dayCounter}</span> <div class="day-details"></div> </div> `; const dayData = storedData[dayId]; applyDayData(cell, dayData || { presence: null, events: [] }); cell.addEventListener('click', handleDayClick); cell.addEventListener('dblclick', handleDayDoubleClick); dayCounter++; } row.appendChild(cell); } if (i === 5 && !rowHasDaysOfMonth) break; calendarDaysElement.appendChild(row); } }
-        function applyDayData(cell, dayData) { /* ... identique ... */ const detailsContainer = cell.querySelector('.day-details'); if (!detailsContainer.innerHTML.includes('day-note') && !detailsContainer.innerHTML.includes('icon-large')) { detailsContainer.innerHTML = '<div class="day-note"></div>'; } const notesContainer = detailsContainer.querySelector('.day-note'); const isIconOnly = dayData.events && dayData.events.length === 1 && dayData.events[0].text === '' && dayData.events[0].icon !== ''; cell.classList.toggle('day-icon-only', isIconOnly); if (isIconOnly) { detailsContainer.innerHTML = `<span class="icon-large">${dayData.events[0].icon}</span>`; } else { if (!notesContainer) { detailsContainer.innerHTML = '<div class="day-note"></div>'; } const notesDiv = detailsContainer.querySelector('.day-note'); if (dayData.events && dayData.events.length > 0) { notesDiv.innerHTML = dayData.events.map(event => `<span class="event-line"><span class="event-icon">${event.icon || ''}</span>${event.text || ''}</span>`).join(''); } else { notesDiv.innerHTML = ''; } } cell.classList.remove('day-melina-me', 'day-melina-mother'); if (dayData.presence === 'me') { cell.classList.add('day-melina-me'); } else if (dayData.presence === 'mother') { cell.classList.add('day-melina-mother'); } }
-        function handleDayClick(event) { /* ... identique ... */ const cell = event.currentTarget; const date = cell.dataset.date; if (!date) return; if (!storedData[date]) initDayData(date); const currentPresence = storedData[date].presence; let nextPresence = null; if (currentPresence === null) nextPresence = 'me'; else if (currentPresence === 'me') nextPresence = 'mother'; else if (currentPresence === 'mother') nextPresence = null; storedData[date].presence = nextPresence; applyDayData(cell, storedData[date]); cleanAndSaveData(date); }
-        function handleDayDoubleClick(event) { /* ... identique ... */ const cell = event.currentTarget; const date = cell.dataset.date; if (!date) return; if (!storedData[date]) initDayData(date); manageEventsLoop(storedData[date], date, cell); }
-        // *** CORRIGÉ V3 : Menu d'action amélioré avec raccourcis icônes ***
-        function manageEventsLoop(currentData, date, cell) {
-            const currentEventsText = currentData.events.length > 0
-                ? currentData.events.map((ev, i) => `${i + 1}: ${ev.icon || '▫️'} ${ev.text}`).join('\n')
-                : '(Aucun événement)';
+        // --- Fonctions JS ---
 
-            // Vérification que les indices 14 et 15 existent bien dans availableIcons
-            const icon14 = availableIcons.length > 14 ? availableIcons[14] : '❓'; // Icone 14 ou ? si non défini
-            const icon15 = availableIcons.length > 15 ? availableIcons[15] : '❓'; // Icone 15 ou ? si non défini
-
-            // Prompt amélioré avec raccourcis
-            const actionPrompt = `${currentEventsText}\n\nActions rapides:\n` +
-                                 `1: Ajouter Texte (+Icône)\n` +
-                                 `2: Ajouter Icône seule (Choisir)\n` +
-                                 `3: Ajouter Icône ${icon14} seule\n` + // Utilise l'icône réelle
-                                 `4: Ajouter Icône ${icon15} seule\n` + // Utilise l'icône réelle
-                                 `--------------------\n` +
-                                 `5: Supprimer un événement\n` +
-                                 `6: Effacer tous les événements\n` +
-                                 `(Laissez vide ou Annuler pour TERMINER)`;
-            const actionInput = prompt(actionPrompt, '');
-
-            // --- Logique de décision basée sur le choix numérique ---
-
-            if (actionInput === null || actionInput.trim() === '') {
-                cleanAndSaveData(date);
-                applyDayData(cell, currentData);
-                console.log("Fin gestion événements.");
-                return;
-            }
-
-            const choice = parseInt(actionInput.trim());
-
-            switch (choice) {
-                case 1: // Ajouter Texte (+Icône)
-                    console.log("Action: Ajouter Texte (+Icône)");
-                    const newEventText = prompt("Entrez le texte de l'événement:", "");
-                    if (newEventText !== null) { // Si l'utilisateur n'annule pas le texte
-                        const textToAdd = newEventText.trim();
-                        // Demander l'icône pour ce texte
-                        const iconPromptTextForText = `Choisissez une icône pour "${textToAdd}" (numéro ou emoji):\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`;
-                        const chosenIconInputForText = prompt(iconPromptTextForText, '0');
-                        let chosenIconForText = '';
-                        if (chosenIconInputForText !== null) {
-                             const iconIndex = parseInt(chosenIconInputForText);
-                             if (!isNaN(iconIndex) && iconIndex >= 0 && iconIndex < availableIcons.length) { chosenIconForText = availableIcons[iconIndex]; }
-                             else if (/\p{Emoji}/u.test(chosenIconInputForText)) { chosenIconForText = chosenIconInputForText; }
-                             else { chosenIconForText = availableIcons[0]; }
-                        } // Si annulé, chosenIconForText reste ''
-                        // Ajoute l'événement (même si pas d'icône choisie après le texte)
-                        currentData.events.push({ text: textToAdd, icon: chosenIconForText });
-                        console.log("Événement ajouté:", { text: textToAdd, icon: chosenIconForText });
-                    } else {
-                         console.log("Ajout Texte annulé.");
-                    }
-                    // Termine après cette action pour éviter boucle infinie de prompts
-                    cleanAndSaveData(date);
-                    applyDayData(cell, currentData);
-                    break;
-
-                case 2: // Ajouter Icône seule (Choisir)
-                    console.log("Action: Ajouter Icône (Choisir)");
-                    const iconPromptText = `Choisissez une icône seule (numéro ou emoji):\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`;
-                    const chosenIconInput = prompt(iconPromptText, '0');
-                    let chosenIcon = '';
-                    if (chosenIconInput !== null) {
-                         const iconIndex = parseInt(chosenIconInput);
-                         if (!isNaN(iconIndex) && iconIndex >= 0 && iconIndex < availableIcons.length) { chosenIcon = availableIcons[iconIndex]; }
-                         else if (/\p{Emoji}/u.test(chosenIconInput)) { chosenIcon = chosenIconInput; }
-                         else { chosenIcon = availableIcons[0]; }
-                         if (chosenIcon !== '') { currentData.events.push({ text: "", icon: chosenIcon }); console.log("Icône seule ajoutée:", { text: "", icon: chosenIcon });}
-                         else { console.log("Ajout annulé (aucune icône choisie)."); }
-                    } else { console.log("Ajout Icône annulé."); }
-                    // Termine après cette action
-                    cleanAndSaveData(date);
-                    applyDayData(cell, currentData);
-                    break;
-
-                case 3: // Ajouter Icône 14 (🏠) seule
-                     console.log("Action: Ajouter Icône rapide 14");
-                     if (icon14 !== '❓') { // Sécurité si l'index n'existe pas
-                        currentData.events.push({ text: "", icon: icon14 });
-                        console.log("Icône rapide ajoutée:", { text: "", icon: icon14 });
-                     } else {
-                         alert("Erreur: Icône 14 non définie dans la liste.");
-                     }
-                    // Termine après cette action
-                    cleanAndSaveData(date);
-                    applyDayData(cell, currentData);
-                    break;
-
-                case 4: // Ajouter Icône 15 (💼) seule
-                     console.log("Action: Ajouter Icône rapide 15");
-                      if (icon15 !== '❓') { // Sécurité
-                         currentData.events.push({ text: "", icon: icon15 });
-                         console.log("Icône rapide ajoutée:", { text: "", icon: icon15 });
-                      } else {
-                          alert("Erreur: Icône 15 non définie dans la liste.");
-                      }
-                    // Termine après cette action
-                    cleanAndSaveData(date);
-                    applyDayData(cell, currentData);
-                    break;
-
-                case 5: // Supprimer un événement
-                    console.log("Action: Supprimer événement");
-                    if (currentData.events.length > 0) {
-                        const removePrompt = `Entrez le NUMÉRO de l'événement à supprimer:\n${currentData.events.map((ev, i) => `${i + 1}: ${ev.icon || '▫️'} ${ev.text}`).join('\n')}`;
-                        const removeInput = prompt(removePrompt, '');
-                        const indexToRemove = parseInt(removeInput) - 1; // Index basé sur 0
-                        if (!isNaN(indexToRemove) && indexToRemove >= 0 && indexToRemove < currentData.events.length) {
-                            const removed = currentData.events.splice(indexToRemove, 1);
-                            console.log("Événement supprimé:", removed);
-                        } else if (removeInput !== null && removeInput.trim() !== '') {
-                            alert("Numéro invalide.");
-                        }
-                    } else {
-                        alert("Aucun événement à supprimer.");
-                    }
-                    // Relance la boucle pour voir le résultat ou faire autre chose
-                    manageEventsLoop(currentData, date, cell);
-                    break;
-
-                case 6: // Effacer tous les événements
-                    console.log("Action: Effacer tout");
-                    if (confirm("Êtes-vous sûr de vouloir effacer tous les événements de ce jour ?")) {
-                        currentData.events = [];
-                        console.log("Tous les événements effacés.");
-                    }
-                     // Relance la boucle pour voir le résultat ou faire autre chose
-                    manageEventsLoop(currentData, date, cell);
-                    break;
-
-                default: // Choix invalide
-                    alert("Choix invalide.");
-                    // Relance la boucle
-                    manageEventsLoop(currentData, date, cell);
-                    break;
-            }
+        // generateCalendar (inchangée, mais l'event listener pour 'click' sera vidé)
+        function generateCalendar(year, month) { /* ... identique ... */
+             calendarDaysElement.innerHTML = ''; const date = new Date(year, month, 1); const monthName = date.toLocaleString('fr-FR', { month: 'long' }); const yearNum = date.getFullYear(); monthYearElement.textContent = `${monthName} ${yearNum}`; const firstDayOfMonth = (date.getDay() + 6) % 7; const daysInMonth = new Date(year, month + 1, 0).getDate(); const daysInPrevMonth = new Date(year, month, 0).getDate(); let dayCounter = 1; let nextMonthDayCounter = 1; for (let i = 0; i < 6; i++) { const row = document.createElement('tr'); let rowHasDaysOfMonth = false; for (let j = 0; j < 7; j++) { const cell = document.createElement('td'); const dayId = `<span class="math-inline">\{year\}\-</span>{String(month + 1).padStart(2, '0')}-${String(dayCounter).padStart(2, '0')}`; if (i === 0 && j < firstDayOfMonth) { cell.classList.add('day-outside-month'); } else if (dayCounter > daysInMonth) { cell.classList.add('day-outside-month'); nextMonthDayCounter++; } else { rowHasDaysOfMonth = true; cell.dataset.date = dayId; cell.innerHTML = ` <div class="day-content"> <span class="day-number">${dayCounter}</span> <div class="day-details"></div> </div> `; const dayData = storedData[dayId]; applyDayData(cell, dayData || { presence: null, events: [] });
+             // *** MODIFICATION : L'écouteur de clic simple est toujours ajouté mais la fonction handleDayClick sera vidée ***
+             cell.addEventListener('click', handleDayClick);
+             cell.addEventListener('dblclick', handleDayDoubleClick); dayCounter++; } row.appendChild(cell); } if (i === 5 && !rowHasDaysOfMonth) break; calendarDaysElement.appendChild(row); }
         }
-        function initDayData(date) { /* ... identique ... */ if (!storedData[date]) { storedData[date] = { presence: null, events: [] }; } else if (!Array.isArray(storedData[date].events)) { storedData[date].events = []; } }
-        function cleanAndSaveData(date) { /* ... identique ... */ const data = storedData[date]; if(data && data.events) { data.events = data.events.filter(event => event.text !== '' || event.icon !== ''); } if (data && data.presence === null && (!data.events || data.events.length === 0)) { delete storedData[date]; } localStorage.setItem(STORAGE_KEY, JSON.stringify(storedData)); }
-        function applyBackground(imageDataUrl) { /* ... identique ... */ calendarContainer.style.backgroundImage = imageDataUrl ? `url(${imageDataUrl})` : 'none'; }
-        changeBackgroundLabel.addEventListener('click', () => backgroundInput.click());
-        backgroundInput.addEventListener('change', (event) => { /* ... identique ... */ const file = event.target.files[0]; if (!file || !file.type.startsWith('image/')) return; const reader = new FileReader(); reader.onload = (e) => { const url = e.target.result; if (url.length > 8 * 1024 * 1024) { alert("Image > 8MB..."); localStorage.removeItem('calendarBackground_v4'); applyBackground(url); } else { localStorage.setItem('calendarBackground_v4', url); applyBackground(url); } }; reader.readAsDataURL(file); event.target.value = null; });
-        removeBackgroundButton.addEventListener('click', () => { /* ... identique ... */ applyBackground(null); localStorage.removeItem('calendarBackground_v4'); });
-        const savedBackground = localStorage.getItem('calendarBackground_v4'); if (savedBackground) applyBackground(savedBackground);
+
+        // applyDayData (inchangée par rapport à V4.1/V4.2 car la logique d'affichage est bonne)
+        function applyDayData(cell, dayData) { /* ... identique ... */
+             const detailsContainer = cell.querySelector('.day-details'); if (!detailsContainer.innerHTML.includes('day-note') && !detailsContainer.innerHTML.includes('icon-large')) { detailsContainer.innerHTML = '<div class="day-note"></div>'; } const notesContainer = detailsContainer.querySelector('.day-note'); const isIconOnly = dayData.events && dayData.events.length === 1 && dayData.events[0].text === '' && dayData.events[0].icon !== ''; cell.classList.toggle('day-icon-only', isIconOnly); if (isIconOnly) { detailsContainer.innerHTML = `<span class="icon-large">${dayData.events[0].icon}</span>`; } else { if (!notesContainer) { detailsContainer.innerHTML = '<div class="day-note"></div>'; } const notesDiv = detailsContainer.querySelector('.day-note'); if (dayData.events && dayData.events.length > 0) { notesDiv.innerHTML = dayData.events.map(event => `<span class="event-line"><span class="event-icon"><span class="math-inline">\{event\.icon \|\| ''\}</span\></span>{event.text || ''}</span>`).join(''); } else { notesDiv.innerHTML = ''; } } cell.classList.remove('day-melina-me', 'day-melina-mother'); if (dayData.presence === 'me') { cell.classList.add('day-melina-me'); } else if (dayData.presence === 'mother') { cell.classList.add('day-melina-mother'); }
+        }
 
 
-        // --- Export image : Ajout de l'option ignoreElements ---
-        saveAsImageButton.addEventListener('click', () => {
-            const filename = `calendrier-${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}.png`;
-            const buttonOriginalText = saveAsImageButton.textContent;
-            saveAsImageButton.textContent = 'Génération...';
-            saveAsImageButton.disabled = true;
-
-            // *** Définition de la fonction pour ignorer les éléments ***
-            const ignoreFunction = function(element) {
-                // Ignore par ID
-                const idsToIgnore = ['prevMonth', 'nextMonth', 'printButton', 'backgroundInput'];
-                if (idsToIgnore.includes(element.id)) {
-                    return true;
-                }
-                // Ignore par Classe ou Conteneur spécifique
-                if (element.classList.contains('controls-container') || // Le conteneur des boutons du haut
-                    element.classList.contains('legend')) {              // La légende
-                    return true;
-                }
-                // N'ignore pas par défaut
-                return false;
-            }
-
-            // Options pour html2canvas incluant ignoreElements
-            const options = {
-                 scale: 2,
-                 useCORS: true, // Peut être nécessaire si l'image de fond est externe
-                 logging: false,
-                 // *** Ajout de l'option ici ***
-                 ignoreElements: ignoreFunction
-             };
-
-            console.log('Début de la capture html2canvas (éléments ignorés)...');
-            html2canvas(calendarContainer, options).then(canvas => { // Cible bien calendarContainer
-                console.log('Canvas généré.');
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL('image/png');
-                console.log('Lien de téléchargement créé.');
-                link.click();
-                console.log('Téléchargement lancé.');
-                saveAsImageButton.textContent = buttonOriginalText;
-                saveAsImageButton.disabled = false;
-            }).catch(error => {
-                console.error('Erreur html2canvas:', error);
-                alert("Une erreur est survenue lors de la création de l'image.\n" + error);
-                saveAsImageButton.textContent = buttonOriginalText;
-                saveAsImageButton.disabled = false;
-            });
-        });
-
-        // --- Navigation et Impression Classique ---
-        prevMonthButton.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
-        nextMonthButton.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
-        printButton.addEventListener('click', () => {
-             alert("Pour l'impression classique, vérifiez les options d'impression (Plus d'options > Graphiques d'arrière-plan) pour inclure les couleurs.");
-             window.print();
-        });
-
-        // --- Initialisation ---
-        generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
-
-    </script>
-
-</body>
-</html>
+        // *** MODIFICATION : Vider la fonction handleDayClick ***
+        function handleDayClick(event) {
+            // Le clic simple ne fait plus rien pour éviter les conflits/erreurs.
+            // On pourrait l'utiliser plus tard pour "
