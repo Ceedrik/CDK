@@ -341,27 +341,6 @@
             document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Erreur lors du chargement du calendrier. Détails dans la console.<br>${error}</div>`;
         }
 
-
-        // initDayData (inchangée)
-        function initDayData(date) { /* ... identique ... */ if (!storedData[date]) { storedData[date] = { presence: null, events: [] }; } else if (!Array.isArray(storedData[date].events)) { storedData[date].events = []; } }
-        // cleanAndSaveData (inchangée)
-        function cleanAndSaveData(date) { /* ... identique ... */ const data = storedData[date]; if(data && data.events) { data.events = data.events.filter(event => event.text !== '' || event.icon !== ''); } if (data && data.presence === null && (!data.events || data.events.length === 0)) { delete storedData[date]; } localStorage.setItem(STORAGE_KEY, JSON.stringify(storedData)); }
-        // Gestion Fond d'écran (inchangée)
-        function applyBackground(imageDataUrl) { /* ... identique ... */ calendarContainer.style.backgroundImage = imageDataUrl ? `url(${imageDataUrl})` : 'none'; }
-        changeBackgroundLabel.addEventListener('click', () => backgroundInput.click());
-        backgroundInput.addEventListener('change', (event) => { /* ... identique ... */ const file = event.target.files[0]; if (!file || !file.type.startsWith('image/')) return; const reader = new FileReader(); reader.onload = (e) => { const url = e.target.result; if (url.length > 8 * 1024 * 1024) { alert("Image > 8MB..."); localStorage.removeItem('calendarBackground_v4'); applyBackground(url); } else { localStorage.setItem('calendarBackground_v4', url); applyBackground(url); } }; reader.readAsDataURL(file); event.target.value = null; });
-        removeBackgroundButton.addEventListener('click', () => { /* ... identique ... */ applyBackground(null); localStorage.removeItem('calendarBackground_v4'); });
-        const savedBackground = localStorage.getItem('calendarBackground_v4'); if (savedBackground) applyBackground(savedBackground);
-        // Export Image (inchangée, utilise ignoreElements)
-        saveAsImageButton.addEventListener('click', () => { /* ... identique ... */ const filename = `calendrier-${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}.png`; const buttonOriginalText = saveAsImageButton.textContent; saveAsImageButton.textContent = 'Génération...'; saveAsImageButton.disabled = true; const ignoreFunction = function(element) { const idsToIgnore = ['prevMonth', 'nextMonth', 'printButton', 'backgroundInput']; if (idsToIgnore.includes(element.id)) return true; if (element.classList.contains('controls-container') || element.classList.contains('legend')) return true; return false; }; const options = { scale: 2, useCORS: true, logging: false, ignoreElements: ignoreFunction }; console.log('Début capture...'); html2canvas(calendarContainer, options).then(canvas => { console.log('Canvas généré.'); const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL('image/png'); console.log('Lien créé.'); link.click(); console.log('Téléchargement lancé.'); saveAsImageButton.textContent = buttonOriginalText; saveAsImageButton.disabled = false; }).catch(error => { console.error('Erreur html2canvas:', error); alert("Erreur création image.\n" + error); saveAsImageButton.textContent = buttonOriginalText; saveAsImageButton.disabled = false; }); });
-        // Navigation et Impression Classique (inchangées)
-        prevMonthButton.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
-        nextMonthButton.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); generateCalendar(currentDate.getFullYear(), currentDate.getMonth()); });
-        printButton.addEventListener('click', () => { alert("Pour l'impression classique, vérifiez les options d'impression (Plus d'options > Graphiques d'arrière-plan) pour inclure les couleurs."); window.print(); });
-
-        // --- Initialisation ---
-        generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
-
     </script>
 
 </body>
