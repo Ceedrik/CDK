@@ -135,7 +135,146 @@
         function applyDayData(cell, dayData) { /* ... identique ... */ const detailsContainer = cell.querySelector('.day-details'); if (!detailsContainer.innerHTML.includes('day-note') && !detailsContainer.innerHTML.includes('icon-large')) { detailsContainer.innerHTML = '<div class="day-note"></div>'; } const notesContainer = detailsContainer.querySelector('.day-note'); const isIconOnly = dayData.events && dayData.events.length === 1 && dayData.events[0].text === '' && dayData.events[0].icon !== ''; cell.classList.toggle('day-icon-only', isIconOnly); if (isIconOnly) { detailsContainer.innerHTML = `<span class="icon-large">${dayData.events[0].icon}</span>`; } else { if (!notesContainer) { detailsContainer.innerHTML = '<div class="day-note"></div>'; } const notesDiv = detailsContainer.querySelector('.day-note'); if (dayData.events && dayData.events.length > 0) { notesDiv.innerHTML = dayData.events.map(event => `<span class="event-line"><span class="event-icon">${event.icon || ''}</span>${event.text || ''}</span>`).join(''); } else { notesDiv.innerHTML = ''; } } cell.classList.remove('day-melina-me', 'day-melina-mother'); if (dayData.presence === 'me') { cell.classList.add('day-melina-me'); } else if (dayData.presence === 'mother') { cell.classList.add('day-melina-mother'); } }
         function handleDayClick(event) { /* ... identique ... */ const cell = event.currentTarget; const date = cell.dataset.date; if (!date) return; if (!storedData[date]) initDayData(date); const currentPresence = storedData[date].presence; let nextPresence = null; if (currentPresence === null) nextPresence = 'me'; else if (currentPresence === 'me') nextPresence = 'mother'; else if (currentPresence === 'mother') nextPresence = null; storedData[date].presence = nextPresence; applyDayData(cell, storedData[date]); cleanAndSaveData(date); }
         function handleDayDoubleClick(event) { /* ... identique ... */ const cell = event.currentTarget; const date = cell.dataset.date; if (!date) return; if (!storedData[date]) initDayData(date); manageEventsLoop(storedData[date], date, cell); }
-        function manageEventsLoop(currentData, date, cell) { /* ... identique ... */ const currentEventsText = currentData.events.length > 0 ? currentData.events.map((ev, i) => `${i + 1}: ${ev.icon || '▫️'} ${ev.text}`).join('\n') : '(Aucun événement)'; const actionPrompt = `${currentEventsText}\n\nActions:\n- Entrez le texte d'un événement pour l'ajouter (+ choix icône).\n- Tapez 'ICON' pour ajouter seulement une icône.\n- Entrez le NUMÉRO d'un événement pour le supprimer.\n- Tapez 'CLEAR' ou 'EFFACER' pour tout supprimer.\n- Laissez vide ou Annuler pour TERMINER.`; const actionInput = prompt(actionPrompt, ''); if (actionInput === null || actionInput.trim() === '') { cleanAndSaveData(date); applyDayData(cell, currentData); console.log("Fin gestion événements."); return; } const trimmedInput = actionInput.trim(); const command = trimmedInput.toUpperCase(); const potentialNumber = parseInt(trimmedInput); if (command === 'CLEAR' || command === 'EFFACER') { currentData.events = []; console.log("Événements effacés."); manageEventsLoop(currentData, date, cell); return; } if (!isNaN(potentialNumber) && potentialNumber > 0 && potentialNumber <= currentData.events.length) { const removedEvent = currentData.events.splice(potentialNumber - 1, 1); console.log("Événement supprimé:", removedEvent); manageEventsLoop(currentData, date, cell); return; } if (command === 'ICON') { console.log("Ajout d'une icône seule."); const iconPromptText = `Choisissez une icône seule (numéro ou emoji):\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`; const chosenIconInput = prompt(iconPromptText, '0'); let chosenIcon = ''; if (chosenIconInput !== null) { const iconIndex = parseInt(chosenIconInput); if (!isNaN(iconIndex) && iconIndex >= 0 && iconIndex < availableIcons.length) { chosenIcon = availableIcons[iconIndex]; } else if (/\p{Emoji}/u.test(chosenIconInput)) { chosenIcon = chosenIconInput; } else { chosenIcon = availableIcons[0]; } if (chosenIcon !== '') { currentData.events.push({ text: "", icon: chosenIcon }); console.log("Icône seule ajoutée:", { text: "", icon: chosenIcon }); } else { console.log("Ajout icône seule annulé (aucune icône choisie)."); } } else { console.log("Ajout icône seule annulé."); } manageEventsLoop(currentData, date, cell); return; } const newEventText = trimmedInput; console.log("Ajout événement avec texte:", newEventText); const iconPromptTextForText = `Choisissez une icône pour "${newEventText}" (numéro ou emoji):\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`; const chosenIconInputForText = prompt(iconPromptTextForText, '0'); let chosenIconForText = ''; if (chosenIconInputForText !== null) { const iconIndex = parseInt(chosenIconInputForText); if (!isNaN(iconIndex) && iconIndex >= 0 && iconIndex < availableIcons.length) { chosenIconForText = availableIcons[iconIndex]; } else if (/\p{Emoji}/u.test(chosenIconInputForText)) { chosenIconForText = chosenIconInputForText; } else { chosenIconForText = availableIcons[0]; } currentData.events.push({ text: newEventText, icon: chosenIconForText }); console.log("Événement texte+icône ajouté:", { text: newEventText, icon: chosenIconForText }); } else { console.log("Ajout événement texte+icône annulé (choix icône annulé)."); } manageEventsLoop(currentData, date, cell); }
+        // *** CORRIGÉ V3 : Menu d'action amélioré avec raccourcis icônes ***
+        function manageEventsLoop(currentData, date, cell) {
+            const currentEventsText = currentData.events.length > 0
+                ? currentData.events.map((ev, i) => `${i + 1}: ${ev.icon || '▫️'} ${ev.text}`).join('\n')
+                : '(Aucun événement)';
+
+            // Vérification que les indices 14 et 15 existent bien dans availableIcons
+            const icon14 = availableIcons.length > 14 ? availableIcons[14] : '❓'; // Icone 14 ou ? si non défini
+            const icon15 = availableIcons.length > 15 ? availableIcons[15] : '❓'; // Icone 15 ou ? si non défini
+
+            // Prompt amélioré avec raccourcis
+            const actionPrompt = `${currentEventsText}\n\nActions rapides:\n` +
+                                 `1: Ajouter Texte (+Icône)\n` +
+                                 `2: Ajouter Icône seule (Choisir)\n` +
+                                 `3: Ajouter Icône ${icon14} seule\n` + // Utilise l'icône réelle
+                                 `4: Ajouter Icône ${icon15} seule\n` + // Utilise l'icône réelle
+                                 `--------------------\n` +
+                                 `5: Supprimer un événement\n` +
+                                 `6: Effacer tous les événements\n` +
+                                 `(Laissez vide ou Annuler pour TERMINER)`;
+            const actionInput = prompt(actionPrompt, '');
+
+            // --- Logique de décision basée sur le choix numérique ---
+
+            if (actionInput === null || actionInput.trim() === '') {
+                cleanAndSaveData(date);
+                applyDayData(cell, currentData);
+                console.log("Fin gestion événements.");
+                return;
+            }
+
+            const choice = parseInt(actionInput.trim());
+
+            switch (choice) {
+                case 1: // Ajouter Texte (+Icône)
+                    console.log("Action: Ajouter Texte (+Icône)");
+                    const newEventText = prompt("Entrez le texte de l'événement:", "");
+                    if (newEventText !== null) { // Si l'utilisateur n'annule pas le texte
+                        const textToAdd = newEventText.trim();
+                        // Demander l'icône pour ce texte
+                        const iconPromptTextForText = `Choisissez une icône pour "${textToAdd}" (numéro ou emoji):\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`;
+                        const chosenIconInputForText = prompt(iconPromptTextForText, '0');
+                        let chosenIconForText = '';
+                        if (chosenIconInputForText !== null) {
+                             const iconIndex = parseInt(chosenIconInputForText);
+                             if (!isNaN(iconIndex) && iconIndex >= 0 && iconIndex < availableIcons.length) { chosenIconForText = availableIcons[iconIndex]; }
+                             else if (/\p{Emoji}/u.test(chosenIconInputForText)) { chosenIconForText = chosenIconInputForText; }
+                             else { chosenIconForText = availableIcons[0]; }
+                        } // Si annulé, chosenIconForText reste ''
+                        // Ajoute l'événement (même si pas d'icône choisie après le texte)
+                        currentData.events.push({ text: textToAdd, icon: chosenIconForText });
+                        console.log("Événement ajouté:", { text: textToAdd, icon: chosenIconForText });
+                    } else {
+                         console.log("Ajout Texte annulé.");
+                    }
+                    // Termine après cette action pour éviter boucle infinie de prompts
+                    cleanAndSaveData(date);
+                    applyDayData(cell, currentData);
+                    break;
+
+                case 2: // Ajouter Icône seule (Choisir)
+                    console.log("Action: Ajouter Icône (Choisir)");
+                    const iconPromptText = `Choisissez une icône seule (numéro ou emoji):\n${availableIcons.map((icon, index) => `${index}: ${icon || 'Aucun'}`).join('\n')}`;
+                    const chosenIconInput = prompt(iconPromptText, '0');
+                    let chosenIcon = '';
+                    if (chosenIconInput !== null) {
+                         const iconIndex = parseInt(chosenIconInput);
+                         if (!isNaN(iconIndex) && iconIndex >= 0 && iconIndex < availableIcons.length) { chosenIcon = availableIcons[iconIndex]; }
+                         else if (/\p{Emoji}/u.test(chosenIconInput)) { chosenIcon = chosenIconInput; }
+                         else { chosenIcon = availableIcons[0]; }
+                         if (chosenIcon !== '') { currentData.events.push({ text: "", icon: chosenIcon }); console.log("Icône seule ajoutée:", { text: "", icon: chosenIcon });}
+                         else { console.log("Ajout annulé (aucune icône choisie)."); }
+                    } else { console.log("Ajout Icône annulé."); }
+                    // Termine après cette action
+                    cleanAndSaveData(date);
+                    applyDayData(cell, currentData);
+                    break;
+
+                case 3: // Ajouter Icône 14 (🏠) seule
+                     console.log("Action: Ajouter Icône rapide 14");
+                     if (icon14 !== '❓') { // Sécurité si l'index n'existe pas
+                        currentData.events.push({ text: "", icon: icon14 });
+                        console.log("Icône rapide ajoutée:", { text: "", icon: icon14 });
+                     } else {
+                         alert("Erreur: Icône 14 non définie dans la liste.");
+                     }
+                    // Termine après cette action
+                    cleanAndSaveData(date);
+                    applyDayData(cell, currentData);
+                    break;
+
+                case 4: // Ajouter Icône 15 (💼) seule
+                     console.log("Action: Ajouter Icône rapide 15");
+                      if (icon15 !== '❓') { // Sécurité
+                         currentData.events.push({ text: "", icon: icon15 });
+                         console.log("Icône rapide ajoutée:", { text: "", icon: icon15 });
+                      } else {
+                          alert("Erreur: Icône 15 non définie dans la liste.");
+                      }
+                    // Termine après cette action
+                    cleanAndSaveData(date);
+                    applyDayData(cell, currentData);
+                    break;
+
+                case 5: // Supprimer un événement
+                    console.log("Action: Supprimer événement");
+                    if (currentData.events.length > 0) {
+                        const removePrompt = `Entrez le NUMÉRO de l'événement à supprimer:\n${currentData.events.map((ev, i) => `${i + 1}: ${ev.icon || '▫️'} ${ev.text}`).join('\n')}`;
+                        const removeInput = prompt(removePrompt, '');
+                        const indexToRemove = parseInt(removeInput) - 1; // Index basé sur 0
+                        if (!isNaN(indexToRemove) && indexToRemove >= 0 && indexToRemove < currentData.events.length) {
+                            const removed = currentData.events.splice(indexToRemove, 1);
+                            console.log("Événement supprimé:", removed);
+                        } else if (removeInput !== null && removeInput.trim() !== '') {
+                            alert("Numéro invalide.");
+                        }
+                    } else {
+                        alert("Aucun événement à supprimer.");
+                    }
+                    // Relance la boucle pour voir le résultat ou faire autre chose
+                    manageEventsLoop(currentData, date, cell);
+                    break;
+
+                case 6: // Effacer tous les événements
+                    console.log("Action: Effacer tout");
+                    if (confirm("Êtes-vous sûr de vouloir effacer tous les événements de ce jour ?")) {
+                        currentData.events = [];
+                        console.log("Tous les événements effacés.");
+                    }
+                     // Relance la boucle pour voir le résultat ou faire autre chose
+                    manageEventsLoop(currentData, date, cell);
+                    break;
+
+                default: // Choix invalide
+                    alert("Choix invalide.");
+                    // Relance la boucle
+                    manageEventsLoop(currentData, date, cell);
+                    break;
+            }
+        }
         function initDayData(date) { /* ... identique ... */ if (!storedData[date]) { storedData[date] = { presence: null, events: [] }; } else if (!Array.isArray(storedData[date].events)) { storedData[date].events = []; } }
         function cleanAndSaveData(date) { /* ... identique ... */ const data = storedData[date]; if(data && data.events) { data.events = data.events.filter(event => event.text !== '' || event.icon !== ''); } if (data && data.presence === null && (!data.events || data.events.length === 0)) { delete storedData[date]; } localStorage.setItem(STORAGE_KEY, JSON.stringify(storedData)); }
         function applyBackground(imageDataUrl) { /* ... identique ... */ calendarContainer.style.backgroundImage = imageDataUrl ? `url(${imageDataUrl})` : 'none'; }
