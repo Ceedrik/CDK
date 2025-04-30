@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire de Rencontres - Star Wars Force et Destinée</title>
+    <style>
+        /* CSS (à étoffer) */
+        body {
+            font-family: sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+        .rencontre {
+            border: 1px solid #666;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .pnj, .joueur {
+            cursor: pointer;
+            color: #ff0;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+        }
+        .popup-contenu {
+            background-color: #333;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            position: relative;
+        }
+        .fermer {
+            color: #fff;
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .jet-des {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .des {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .avantage {
+            background-color: green;
+        }
+        .desavantage {
+            background-color: red;
+        }
+        .difficulte {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gestionnaire de Rencontres - Star Wars Force et Destinée</h1>
+
+    <div id="rencontres">
+        </div>
+
+    <button id="ajouterRencontre">Ajouter une Rencontre</button>
+    <button id="genererRencontreAleatoire">Générer Rencontre Aléatoire</button>
+
+    <div id="popupFiche" class="popup">
+        <div class="popup-contenu">
+            <span class="fermer">&times;</span>
+            <div id="popupDetails">
+                </div>
+            <div id="popupSante">
+                </div>
+            <div id="popupJetsDes">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        //  JavaScript
+        const rencontresDiv = document.getElementById('rencontres');
+        const ajouterRencontreBouton = document.getElementById('ajouterRencontre');
+        const genererRencontreAleatoireBouton = document.getElementById('genererRencontreAleatoire');
+        const popupFiche = document.getElementById('popupFiche');
+        const popupDetails = document.getElementById('popupDetails');
+        const popupSante = document.getElementById('popupSante');
+        const popupJetsDes = document.getElementById('popupJetsDes');
+        const fermerPopup = document.querySelector('.fermer');
+
+        let rencontres = [];
+        let personnages = [  // Exemple de données de personnages
+            { id: 1, nom: "Sasha", espece: "Humain", carriere: "Exploratrice", sante: 120 },  // [cite: 1]
+            { id: 2, nom: "Jek", espece: "Twi'lek", carriere: "Contrebandier", sante: 100 }
+        ];
+        let pnjs = [  // Exemple de données de PNJ
+            { id: 101, nom: "Grakkus le Hutt", espece: "Hutt", sante: 250 },
+            { id: 102, nom: "Officier Impérial", espece: "Humain", sante: 80 }
+        ];
+
+        function afficherRencontres() {
+            rencontresDiv.innerHTML = '';
+            rencontres.forEach((rencontre, index) => {
+                const rencontreElement = document.createElement('div');
+                rencontreElement.classList.add('rencontre');
+                rencontreElement.innerHTML = `
+                    <h2>Rencontre ${index + 1}</h2>
+                    <p><strong>Lieu:</strong> ${rencontre.lieu}</p>
+                    <p><strong>Objectifs:</strong> ${rencontre.objectifs}</p>
+                    <p><strong>Joueurs:</strong> ${rencontre.joueurs.map(id => `<span class="joueur" data-id="${id}">${personnages.find(p => p.id === id).nom}</span>`).join(', ')}</p>
+                    <p><strong>PNJs:</strong> ${rencontre.pnjs.map(id => `<span class="pnj" data-id="${id}">${pnjs.find(p => p.id === id).nom}</span>`).join(', ')}</p>
+                    <p><strong>Détails:</strong> ${rencontre.details}</p>
+                    <div class="jet-des" id="jetsDesRencontre${index}"></div>
+                `;
+                rencontresDiv.appendChild(rencontreElement);
+            });
+            ajouterListeners(); // Ajoute les écouteurs d'événements après l'affichage
+        }
+
+        function ajouterListeners() {
+            document.querySelectorAll('.pnj, .joueur').forEach(element => {
+                element.addEventListener('click', () => afficherFiche(element.dataset.id, element.classList.contains('joueur') ? 'joueur' : 'pnj'));
+            });
+        }
+
+        function afficherFiche(id, type) {
+            const cible = type === 'joueur' ? personnages.find(p => p.id === parseInt(id)) : pnjs.find(p => p.id === parseInt(id));
+            if (cible) {
+                popupDetails.innerHTML = `
+                    <h3>${cible.nom}</h3>
+                    <p>Espèce: ${cible.espece}</p>
+                    <p>Carrière: ${type === 'joueur' ? cible.carriere : 'PNJ'}</p>
+                    `;
+                popupSante.innerHTML = `<p>Santé: <input type="number" value="${cible.sante}" id="sante${cible.id}"></p>`;
+                popupJetsDes.innerHTML = ''; // Réinitialise l'affichage des jets de dés
+                popupFiche.style.display = "block";
+            }
+        }
+
+        fermerPopup.addEventListener('click', () => {
+            popupFiche.style.display = "none";
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === popupFiche) {
+                popupFiche.style.display = "none";
+            }
+        });
+
+        ajouterRencontreBouton.addEventListener('click', () => {
+            //  Formulaire plus élaboré (à remplacer par une meilleure interface)
+            const lieu = prompt("Lieu de la rencontre:");
+            const objectifs = prompt("Objectifs de la rencontre:");
+            const details = prompt("Détails de la rencontre:");
+            const joueursIds = prompt("IDs des joueurs (séparés par des virgules):").split(',').map(id => parseInt(id));
+            const pnjsIds = prompt("IDs des PNJs (séparés par des virgules):").split(',').map(id => parseInt(id));
+            if (lieu && objectifs && joueursIds.length > 0 && pnjsIds.length > 0) {
+                const nouvelleRencontre = { lieu, objectifs, details, joueurs: joueursIds, pnjs: pnjsIds };
+                rencontres.push(nouvelleRencontre);
+                afficherRencontres();
+            }
+        });
+
+        genererRencontreAleatoireBouton.addEventListener('click', () => {
+            //  Générateur de rencontre aléatoire (très basique pour l'instant)
+            const lieuxAleatoires = ["Cantina de Mos Eisley", "Épave de vaisseau spatial", "Marché de Nar Shaddaa", "Temple Jedi abandonné", "Base rebelle secrète"];
+            const objectifsAleatoires = ["Négocier un marché", "Échapper à une poursuite", "Enquêter sur un mystère", "Combattre des ennemis", "Trouver un objet caché"];
+            const lieu = lieuxAleatoires[Math.floor(Math.random() * lieuxAleatoires.length)];
+            const objectifs = objectifsAleatoires[Math.floor(Math.random() * objectifsAleatoires.length)];
+            const joueursIds = personnages.slice(0, Math.floor(Math.random() * personnages.length) + 1).map(p => p.id);
+            const pnjsIds = pnjs.slice(0, Math.floor(Math.random() * pnjs.length) + 1).map(p => p.id);
+            const details = "Une rencontre inattendue et pleine de surprises !";
+            const nouvelleRencontre = { lieu, objectifs, details, joueurs: joueursIds, pnjs: pnjsIds };
+            rencontres.push(nouvelleRencontre);
+            afficherRencontres();
+        });
+
+        function afficherJetsDes(rencontreIndex, jets) {
+            const jetsDesDiv = document.getElementById(`jetsDesRencontre${rencontreIndex}`);
+            jetsDesDiv.innerHTML = '<p><strong>Jets de Dés:</strong></p>';
+            jets.forEach(jet => {
+                const jetDiv = document.createElement('div');
+                jetDiv.classList.add('jet-des');
+                jet.des.forEach(de => {
+                    const deDiv = document.createElement('div');
+                    deDiv.classList.add('des');
+                    if (de.type === 'Avantage') deDiv.classList.add('avantage');
+                    if (de.type === 'Désavantage') deDiv.classList.add('desavantage');
+                    deDiv.textContent = de.resultat;
+                    jetDiv.appendChild(deDiv);
+                });
+                jetDiv.innerHTML += `<span class="difficulte">Difficulté: ${jet.difficulte}</span>`;
+                jetsDesDiv.appendChild(jetDiv);
+            });
+        }
+
+        //  Exemple de données de rencontre (à remplacer)
+        rencontres = [
+            {
+                lieu: "Cantina de Mos Eisley",
+                objectifs: "Négocier un passage en contrebande, éviter l'arrestation",
+                details: "Une ambiance animée, des contrebandiers louches et des patrouilles impériales discrètes.",
+                joueurs: [1, 2],
+                pnjs: [101, 102],
+                jetsDes: [
+                    { difficulte: "Moyen", des: [{ resultat: 4, type: 'Succès' }, { resultat: 2, type: 'Échec' }, { resultat: 1, type: 'Avantage' }] },
+                    { difficulte: "Difficile", des: [{ resultat: 5, type: 'Succès' }, { resultat: 5, type: 'Succès' }, { resultat: 3, type: 'Désavantage' }] }
+                ]
+            },
+            {
+                lieu: "Épave d'un croiseur stellaire",
+                objectifs: "Trouver des pièces de rechange, échapper à un pilleur de tombe Sith",
+                details: "Un lieu dangereux et délabré, avec des pièges et des secrets cachés.",
+                joueurs: [1],
+                pnjs: [102],
+                jetsDes: [
+                    { difficulte: "Facile", des: [{ resultat: 6, type: 'Succès' }, { resultat: 3, type: 'Avantage' }] },
+                    { difficulte: "Héroïque", des: [{ resultat: 1, type: 'Échec' }, { resultat: 2, type: 'Échec' }, { resultat: 1, type: 'Désavantage' }, { resultat: 6, type: 'Succès' }] }
+                ]
+            }
+        ];
+
+        afficherRencontres();
+        rencontres.forEach((rencontre, index) => {
+            if (rencontre.jetsDes) {
+                afficherJetsDes(index, rencontre.jetsDes);
+            }
+        });
+    </script>
+
+</body>
+</html>
