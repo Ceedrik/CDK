@@ -18,6 +18,10 @@ header {
 main {
     flex-grow: 1;
     padding: 20px;
+    display: flex; /* <-- APPLIQUE FLEXBOX AU CONTENEUR */
+    gap: 20px;    /* <-- AJOUTE DE L'ESPACE ENTRE LES COLONNES (navigateurs modernes) */
+    /* Ancienne façon d'ajouter de l'espace :
+       justify-content: space-between; */
 }
 
 .project-category {
@@ -25,10 +29,12 @@ main {
     background-position: center;
     color: white;
     padding: 20px;
-    margin-bottom: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    position: relative; /* Important pour le pseudo-élément de superposition */
+    position: relative;
+    flex: 1; /* <-- PERMET AUX BLOCS DE SE REPARTIR L'ESPACE ÉGALEMENT */
+    min-width: 250px; /* <-- EMPÊCHE LES COLONNES DE DEVENIR TROP ÉTROITES */
+    /* margin-bottom: 20px; /* <-- PLUS NÉCESSAIRE AVEC FLEXBOX ROW + GAP */
 }
 
 .project-category::before {
@@ -38,12 +44,12 @@ main {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* Assombrir l'image de fond pour la lisibilité du texte */
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 8px;
 }
 
 .project-category > * {
-    position: relative; /* Placer le contenu au-dessus de la superposition */
+    position: relative;
     z-index: 1;
 }
 
@@ -51,6 +57,7 @@ main {
     margin-top: 0;
     font-size: 1.5em;
     margin-bottom: 10px;
+    text-align: center; /* Centrer le titre dans la colonne */
 }
 
 .project-list {
@@ -63,13 +70,14 @@ main {
 }
 
 .project-list a {
-    display: inline-block;
+    display: block; /* Pour que le lien prenne toute la largeur du li */
     padding: 8px 15px;
     text-decoration: none;
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 5px;
     transition: background-color 0.3s ease;
+    text-align: center; /* Centrer le texte du lien */
 }
 
 .project-list a:hover {
@@ -82,4 +90,18 @@ footer {
     text-align: center;
     padding: 1em 0;
     font-size: 0.8em;
+}
+
+/* RESPONSIVE : Empiler les colonnes sur petits écrans */
+@media (max-width: 768px) { /* Vous pouvez ajuster cette valeur */
+    main {
+        flex-direction: column; /* Les éléments se placent en colonne */
+        gap: 0; /* Supprime le gap horizontal */
+    }
+
+    .project-category {
+        margin-bottom: 20px; /* Ajoute de nouveau la marge verticale */
+        flex: unset; /* Réinitialise le comportement flex, ils prennent toute la largeur */
+        min-width: auto; /* Réinitialise la largeur min */
+    }
 }
