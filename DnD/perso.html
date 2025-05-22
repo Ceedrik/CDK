@@ -8,62 +8,65 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         /* Styles généraux */
-        body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
-        .editable { border: 1px dashed #9ca3af; padding: 2px 5px; cursor: pointer; min-width: 50px; display: inline-block; border-radius: 0.375rem; background-color: #f9fafb; transition: background-color 0.2s, border-color 0.2s; }
-        .editable:hover { background-color: #f3f4f6; border-color: #6b7280; }
-        .section-card { background-color: white; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden; }
-        .section-title { font-size: 1.35rem; font-weight: 600; margin-bottom: 1.25rem; border-bottom: 2px solid #d1d5db; padding-bottom: 0.75rem; color: #1f2937; display: flex; align-items: center; cursor: pointer; user-select: none; }
-        .section-title i:first-child { margin-right: 0.5rem; color: #4b5563; }
-        .section-title .toggle-icon { margin-left: auto; transition: transform 0.3s ease; }
+        body { font-family: 'Merriweather', serif; background-color: #fffbeb; color: #44403c; }
+        .editable { border: 1px dashed #a8a29e; padding: 2px 5px; cursor: pointer; min-width: 50px; display: inline-block; border-radius: 0.375rem; background-color: #fefce8; transition: background-color 0.2s, border-color 0.2s; }
+        .editable:hover { background-color: #fef9c3; border-color: #78716c; }
+        .section-card { background-color: #ffffff; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -2px rgba(0,0,0,0.1); border: 1px solid #d1c1ad; /* Bordure parchemin */ overflow: hidden; }
+        .section-title { font-size: 1.5rem; /* Un peu plus grand */ font-weight: 700; margin-bottom: 1.25rem; border-bottom: 2px solid #8c2d19; /* text-red-800 */ padding-bottom: 0.75rem; color: #8c2d19; /* text-red-800 */ display: flex; align-items: center; cursor: pointer; user-select: none; }
+        .section-title i:first-child { margin-right: 0.5rem; color: #78350f; /* text-amber-700 */ }
+        .section-title .toggle-icon { margin-left: auto; transition: transform 0.3s ease; color: #78350f; }
         .section-card.collapsed .toggle-icon { transform: rotate(-90deg); }
         .section-content { transition: max-height 0.5s ease-out, opacity 0.3s ease-in-out; max-height: 3000px; /* Augmenté pour contenu long */ overflow: hidden; opacity: 1; }
         .section-card.collapsed .section-content { max-height: 0; opacity: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; }
         .section-card.collapsed .section-title { margin-bottom: 0; }
-        button { display: inline-flex; align-items: center; padding: 0.6rem 1.2rem; background-color: #3b82f6; color: white; border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s, box-shadow 0.2s; font-weight: 500; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-        button:hover { background-color: #2563eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        button#save-to-firebase-btn { background-color: #10b981; } /* Vert */
-        button#save-to-firebase-btn:hover { background-color: #059669; }
-        button.remove-btn { background-color: #ef4444; padding: 0.35rem; margin-left: 0.5rem; border-radius: 9999px; box-shadow: none; }
-        button.remove-btn:hover { background-color: #dc2626; box-shadow: none; }
-        input[type="text"], input[type="number"], textarea, select { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.6rem; width: 100%; margin-top: 0.25rem; margin-bottom: 0.75rem; transition: border-color 0.2s, box-shadow 0.2s; }
-        input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
-        .small-numeric-input { width: 4rem; display: inline-block; margin-left: 0.5rem; padding: 0.25rem 0.5rem; text-align: center; border: 1px solid #d1d5db; border-radius: 0.375rem; }
+        button { display: inline-flex; align-items: center; padding: 0.6rem 1.2rem; background-color: #78350f; /* text-amber-700 */ color: white; border: none; border-radius: 0.375rem; cursor: pointer; transition: background-color 0.2s, box-shadow 0.2s; font-weight: 600; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px -1px rgba(0,0,0,0.1); }
+        button:hover { background-color: #5c2b0c; /* Plus foncé */ box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06); }
+        button#save-to-firebase-btn { background-color: #059669; }
+        button#save-to-firebase-btn:hover { background-color: #047857; }
+        button.remove-btn { background-color: #b91c1c; /* Rouge foncé */ padding: 0.35rem; margin-left: 0.5rem; border-radius: 9999px; box-shadow: none; }
+        button.remove-btn:hover { background-color: #991b1b; box-shadow: none; }
+        input[type="text"], input[type="number"], textarea, select { border: 1px solid #d1c1ad; border-radius: 0.375rem; padding: 0.6rem; width: 100%; margin-top: 0.25rem; margin-bottom: 0.75rem; transition: border-color 0.2s, box-shadow 0.2s; background-color: #fefce8; /* Fond parchemin léger pour inputs */ color: #44403c; }
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus { outline: none; border-color: #78350f; box-shadow: 0 0 0 2px rgba(120, 53, 15, 0.3); }
+        .small-numeric-input { width: 4rem; display: inline-block; margin-left: 0.5rem; padding: 0.25rem 0.5rem; text-align: center; border: 1px solid #d1c1ad; border-radius: 0.375rem; }
         textarea { min-height: 90px; }
         button > i { margin-right: 0.35rem; width: 1.1rem; height: 1.1rem; }
         button.remove-btn > i { margin-right: 0; width: 0.9rem; height: 0.9rem; }
         ul { list-style: none; padding: 0; }
-        li { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.5rem; border-bottom: 1px solid #e5e7eb; transition: background-color 0.15s; }
-        li:nth-child(odd) { background-color: #f9fafb; }
-        li:hover { background-color: #f3f4f6; }
+        li { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.5rem; border-bottom: 1px solid #e7e5e4; transition: background-color 0.15s; }
+        li:nth-child(odd) { background-color: #fef9c3; /* Parchemin très clair pour lignes impaires */ }
+        li:hover { background-color: #fde68a; /* Parchemin plus jaune au survol */ }
         li:last-child { border-bottom: none; }
         #inventory-list-container ul li, #spell-list li { cursor: pointer; }
-        label { font-weight: 500; color: #374151; margin-bottom: 0.1rem; display: inline-block; }
-        #attributes .text-center { background-color: #f9fafb; border: 1px solid #e5e7eb; }
-        #attributes input[type="number"] { background: transparent; border: none; border-bottom: 2px solid #d1d5db; border-radius: 0; padding: 0.2rem; margin-bottom: 0.2rem; box-shadow: none; }
-        #attributes input[type="number"]:focus { border-color: #3b82f6; box-shadow: none; }
-        input[type="checkbox"] { width: 1rem; height: 1rem; margin-right: 0.5rem; cursor: pointer; accent-color: #3b82f6; }
-        .label-icon { width: 1em; height: 1em; display: inline-block; vertical-align: middle; margin-right: 0.3em; color: #6b7280; }
+        label { font-weight: 600; /* Plus gras pour les labels */ color: #57534e; margin-bottom: 0.1rem; display: inline-block; }
+        #attributes .text-center { background-color: #fef9c3; border: 1px solid #e7e5e4; }
+        #attributes input[type="number"] { background: transparent; border: none; border-bottom: 2px solid #d1c1ad; border-radius: 0; padding: 0.2rem; margin-bottom: 0.2rem; box-shadow: none; }
+        #attributes input[type="number"]:focus { border-color: #78350f; box-shadow: none; }
+        input[type="checkbox"] { width: 1rem; height: 1rem; margin-right: 0.5rem; cursor: pointer; accent-color: #78350f; }
+        .label-icon { width: 1em; height: 1em; display: inline-block; vertical-align: middle; margin-right: 0.3em; color: #78350f; }
         .character-image-container, .familiar-image-container { max-width: 150px; margin: 0 auto 1rem auto; }
-        .image-preview { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 0.5rem; border: 2px solid #d1d5db; background-color: #f3f4f6; margin-bottom: 0.5rem; }
-        .list-item-image { width: 2rem; height: 2rem; object-fit: cover; border-radius: 0.25rem; margin-right: 0.75rem; background-color: #f3f4f6; border: 1px solid #e5e7eb; flex-shrink: 0; }
+        .image-preview { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 0.5rem; border: 2px solid #d1c1ad; background-color: #fef9c3; margin-bottom: 0.5rem; }
+        .list-item-image { width: 2rem; height: 2rem; object-fit: cover; border-radius: 0.25rem; margin-right: 0.75rem; background-color: #fef9c3; border: 1px solid #e7e5e4; flex-shrink: 0; }
         .modal-image { max-width: 150px; max-height: 150px; object-fit: contain; margin: 1rem auto; display: block; border-radius: 0.5rem; }
         .image-url-input { font-size: 0.8rem; padding: 0.4rem; }
-        .modal { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .modal { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .modal.visible { opacity: 1; visibility: visible; }
-        .modal-content { background-color: #2d3748; color: #e2e8f0; padding: 2rem; border-radius: 0.75rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); border: 1px solid #4a5568; }
-        .modal-close-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; color: #a0aec0; cursor: pointer; padding: 0.5rem; border-radius: 9999px; transition: color 0.2s, background-color 0.2s; }
-        .modal-close-btn:hover { color: #e2e8f0; background-color: #4a5568; }
-        .modal-content h3 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #f7fafc; border-bottom: 1px solid #4a5568; padding-bottom: 0.5rem; }
+        .modal-content { background-color: #4a3b30; color: #fefce8; padding: 2rem; border-radius: 0.75rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2),0 4px 6px -2px rgba(0,0,0,0.1); border: 2px solid #78350f; }
+        .modal-close-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; color: #d1c1ad; cursor: pointer; padding: 0.5rem; border-radius: 9999px; transition: color 0.2s, background-color 0.2s; }
+        .modal-close-btn:hover { color: #fefce8; background-color: #78350f; }
+        .modal-content h3 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #fef9c3; border-bottom: 1px solid #78350f; padding-bottom: 0.5rem; }
         .modal-content p { margin-bottom: 0.75rem; line-height: 1.6; }
-        .modal-content strong { color: #a0aec0; font-weight: 600; }
-        .modal-content .description-area { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #4a5568; font-style: italic; color: #cbd5e0; }
+        .modal-content strong { color: #d1c1ad; font-weight: 600; }
+        .modal-content .description-area { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #78350f; font-style: italic; color: #fde68a; }
         /* Onglets */
-        .tabs-container { display: flex; border-bottom: 2px solid #d1d5db; margin-bottom: 1rem; flex-wrap: wrap; }
-        .tab-button { padding: 0.75rem 1.25rem; cursor: pointer; border: none; background-color: transparent; color: #6b7280; font-weight: 500; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; margin-bottom: -2px; white-space: nowrap; }
-        .tab-button:hover { color: #374151; }
-        .tab-button.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+        .tabs-container { display: flex; border-bottom: 2px solid #d1c1ad; margin-bottom: 1rem; flex-wrap: wrap; }
+        .tab-button { padding: 0.75rem 1.25rem; cursor: pointer; border: none; background-color: transparent; color: #78716c; font-weight: 600; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; margin-bottom: -2px; white-space: nowrap; }
+        .tab-button:hover { color: #44403c; }
+        .tab-button.active { color: #8c2d19; border-bottom-color: #8c2d19; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .death-saves-container { display: flex; justify-content: space-around; align-items: flex-start; gap: 1rem; }
@@ -78,23 +81,21 @@
         .spell-slot-checkboxes input[type="checkbox"] { width: 0.9rem; height: 0.9rem; margin: 0; }
         input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
-
-        /* Styles pour les onglets principaux */
-        #main-tabs-nav { display: flex; justify-content: center; background-color: #374151; padding: 0.5rem 0; border-radius: 0.5rem 0.5rem 0 0; margin-bottom: 1.5rem; }
-        #main-tabs-nav .main-tab-button { padding: 0.75rem 1.5rem; color: #d1d5db; font-weight: 600; border: none; background-color: transparent; border-bottom: 4px solid transparent; transition: color 0.2s, border-color 0.2s; }
+        #main-tabs-nav { display: flex; justify-content: center; background-color: #5c2b0c; /* Marron foncé pour barre principale */ padding: 0.5rem 0; border-radius: 0.5rem 0.5rem 0 0; margin-bottom: 1.5rem; }
+        #main-tabs-nav .main-tab-button { padding: 0.75rem 1.5rem; color: #fef9c3; /* Texte parchemin clair */ font-weight: 700; border: none; background-color: transparent; border-bottom: 4px solid transparent; transition: color 0.2s, border-color 0.2s; }
         #main-tabs-nav .main-tab-button:hover { color: white; }
-        #main-tabs-nav .main-tab-button.active { color: white; border-bottom-color: #3b82f6; }
+        #main-tabs-nav .main-tab-button.active { color: white; border-bottom-color: #f59e0b; /* Orange/Or */ }
         .main-tab-pane { display: none; }
         .main-tab-pane.active { display: block; }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 </head>
 <body class="p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto">
-        <h1 class="text-4xl font-bold mb-8 text-center text-gray-800">Fiche de Personnage D&D 5e</h1>
+        <h1 class="text-4xl font-bold mb-8 text-center text-stone-800" style="font-family: 'Merriweather', serif;">D&D 5e - Personnage</h1>
 
         <nav id="main-tabs-nav">
             <button class="main-tab-button active" data-tab-target="tab-personnage">Personnage</button>
@@ -107,157 +108,166 @@
 
         <div id="main-tabs-content">
             <div id="tab-personnage" class="main-tab-pane active">
-                <div class="space-y-6">
-                    <section class="section-card" id="general-info-section" data-section-id="general-info">
-                        <h2 class="section-title"><i data-lucide="user-circle"></i>Informations Générales<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
-                        <div class="section-content">
-                            <div class="character-image-container">
-                                <img id="character-image-preview" src="https://placehold.co/150x150/e2e8f0/adb5bd?text=Perso" alt="Aperçu Personnage" class="image-preview" onerror="this.src='https://placehold.co/150x150/e2e8f0/adb5bd?text=Perso';">
-                                <label for="character-image-url" class="text-xs block text-center">URL Image Personnage:</label>
-                                <input type="text" id="character-image-url" data-key="characterImageUrl" placeholder="https://..." class="image-url-input">
-                            </div>
-                            <div class="space-y-3">
-                                <div><label class="font-medium"><i data-lucide="user" class="label-icon"></i>Nom:</label> <span class="editable" data-key="characterName">Stalduk</span></div>
-                                <div><label class="font-medium"><i data-lucide="shield" class="label-icon"></i>Classe & Niv:</label> <span class="editable" data-key="classLevel">Guerrier 1</span></div>
-                                <div><label class="font-medium"><i data-lucide="scroll-text" class="label-icon"></i>Historique:</label> <span class="editable" data-key="background">Soldat</span></div>
-                                <div><label class="font-medium"><i data-lucide="user-cog" class="label-icon"></i>Joueur:</label> <span class="editable" data-key="playerName">Votre Nom</span></div>
-                                <div><label class="font-medium"><i data-lucide="dna" class="label-icon"></i>Race:</label> <span class="editable" data-key="race">Demi-Orque</span></div>
-                                <div><label class="font-medium"><i data-lucide="gem" class="label-icon"></i>Alignement:</label> <span class="editable" data-key="alignment">Loyal Bon</span></div>
-                                <div><label class="font-medium"><i data-lucide="sparkles" class="label-icon"></i>Inspiration:</label> <input type="number" class="w-16 inline-block ml-1" data-key="inspiration" value="0"></div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="section-card" id="attributes-section" data-section-id="attributes">
-                         <h2 class="section-title"><i data-lucide="bar-chart-3"></i>Caractéristiques<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
-                        <div class="section-content">
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4"> {/* Peut-être 2 ou 3 colonnes ici pour les stats */}
-                                <div class="text-center border p-3 rounded-md">
-                                    <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="dumbbell" class="mr-1 h-5 w-5 text-red-600"></i>FOR</label>
-                                    <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="strength" value="10">
-                                    <span class="text-sm text-gray-600 font-semibold" data-key="strengthMod">Mod. +0</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-6">
+                        <section class="section-card" id="general-info-section" data-section-id="general-info">
+                            <h2 class="section-title"><i data-lucide="user-circle"></i>Informations Générales<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
+                            <div class="section-content">
+                                <div class="character-image-container">
+                                    <img id="character-image-preview" src="https://placehold.co/150x150/e2e8f0/adb5bd?text=Perso" alt="Aperçu Personnage" class="image-preview" onerror="this.src='https://placehold.co/150x150/e2e8f0/adb5bd?text=Perso';">
+                                    <label for="character-image-url" class="text-xs block text-center"></label>
+                                    <input type="text" id="character-image-url" data-key="characterImageUrl" placeholder="https://..." class="image-url-input">
                                 </div>
-                                <div class="text-center border p-3 rounded-md">
-                                    <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="feather" class="mr-1 h-5 w-5 text-green-600"></i>DEX</label>
-                                    <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="dexterity" value="10">
-                                    <span class="text-sm text-gray-600 font-semibold" data-key="dexterityMod">Mod. +0</span>
-                                </div>
-                                <div class="text-center border p-3 rounded-md">
-                                    <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="heart-pulse" class="mr-1 h-5 w-5 text-blue-600"></i>CON</label>
-                                    <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="constitution" value="10">
-                                    <span class="text-sm text-gray-600 font-semibold" data-key="constitutionMod">Mod. +0</span>
-                                </div>
-                                <div class="text-center border p-3 rounded-md">
-                                    <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="brain" class="mr-1 h-5 w-5 text-purple-600"></i>INT</label>
-                                    <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="intelligence" value="10">
-                                    <span class="text-sm text-gray-600 font-semibold" data-key="intelligenceMod">Mod. +0</span>
-                                </div>
-                                <div class="text-center border p-3 rounded-md">
-                                    <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="eye" class="mr-1 h-5 w-5 text-yellow-600"></i>SAG</label>
-                                    <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="wisdom" value="10">
-                                    <span class="text-sm text-gray-600 font-semibold" data-key="wisdomMod">Mod. +0</span>
-                                </div>
-                                <div class="text-center border p-3 rounded-md">
-                                    <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="smile" class="mr-1 h-5 w-5 text-pink-600"></i>CHA</label>
-                                    <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="charisma" value="10">
-                                    <span class="text-sm text-gray-600 font-semibold" data-key="charismaMod">Mod. +0</span>
+                                <div class="space-y-3">
+                                    <div><label class="font-medium"><i data-lucide="user" class="label-icon"></i>Nom:</label> <span class="editable" data-key="characterName">Stalduk</span></div>
+                                    <div><label class="font-medium"><i data-lucide="shield" class="label-icon"></i>Classe & Niv:</label> <span class="editable" data-key="classLevel">Guerrier 1</span></div>
+                                    <div><label class="font-medium"><i data-lucide="scroll-text" class="label-icon"></i>Historique:</label> <span class="editable" data-key="background">Soldat</span></div>
+                                    <div><label class="font-medium"><i data-lucide="user-cog" class="label-icon"></i>Joueur:</label> <span class="editable" data-key="playerName">Votre Nom</span></div>
+                                    <div><label class="font-medium"><i data-lucide="dna" class="label-icon"></i>Race:</label> <span class="editable" data-key="race">Demi-Orque</span></div>
+                                    <div><label class="font-medium"><i data-lucide="gem" class="label-icon"></i>Alignement:</label> <span class="editable" data-key="alignment">Loyal Bon</span></div>
+                                    <div><label class="font-medium"><i data-lucide="sparkles" class="label-icon"></i>Inspiration:</label> <input type="number" class="w-16 inline-block ml-1" data-key="inspiration" value="0"></div>
                                 </div>
                             </div>
-                             <div class="mt-5">
-                                <label class="font-medium"><i data-lucide="award" class="label-icon"></i>Bonus Maîtrise:</label>
-                                <input type="number" class="small-numeric-input" data-key="proficiencyBonus" value="2">
+                        </section>
+                        <section class="section-card" id="attributes-section" data-section-id="attributes">
+                             <h2 class="section-title"><i data-lucide="bar-chart-3"></i>Caractéristiques<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
+                            <div class="section-content">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="text-center border p-3 rounded-md">
+                                        <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="dumbbell" class="mr-1 h-5 w-5 text-red-600"></i>FOR</label>
+                                        <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="strength" value="10">
+                                        <span class="text-sm text-gray-600 font-semibold" data-key="strengthMod">Mod. +0</span>
+                                    </div>
+                                    <div class="text-center border p-3 rounded-md">
+                                        <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="feather" class="mr-1 h-5 w-5 text-green-600"></i>DEX</label>
+                                        <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="dexterity" value="10">
+                                        <span class="text-sm text-gray-600 font-semibold" data-key="dexterityMod">Mod. +0</span>
+                                    </div>
+                                    <div class="text-center border p-3 rounded-md">
+                                        <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="heart-pulse" class="mr-1 h-5 w-5 text-blue-600"></i>CON</label>
+                                        <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="constitution" value="10">
+                                        <span class="text-sm text-gray-600 font-semibold" data-key="constitutionMod">Mod. +0</span>
+                                    </div>
+                                    <div class="text-center border p-3 rounded-md">
+                                        <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="brain" class="mr-1 h-5 w-5 text-purple-600"></i>INT</label>
+                                        <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="intelligence" value="10">
+                                        <span class="text-sm text-gray-600 font-semibold" data-key="intelligenceMod">Mod. +0</span>
+                                    </div>
+                                    <div class="text-center border p-3 rounded-md">
+                                        <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="eye" class="mr-1 h-5 w-5 text-yellow-600"></i>SAG</label>
+                                        <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="wisdom" value="10">
+                                        <span class="text-sm text-gray-600 font-semibold" data-key="wisdomMod">Mod. +0</span>
+                                    </div>
+                                    <div class="text-center border p-3 rounded-md">
+                                        <label class="font-bold text-lg flex items-center justify-center"><i data-lucide="smile" class="mr-1 h-5 w-5 text-pink-600"></i>CHA</label>
+                                        <input type="number" class="text-2xl font-bold w-16 mx-auto block text-center attribute-input" data-key="charisma" value="10">
+                                        <span class="text-sm text-gray-600 font-semibold" data-key="charismaMod">Mod. +0</span>
+                                    </div>
+                                </div>
+                                 <div class="mt-5">
+                                    <label class="font-medium"><i data-lucide="award" class="label-icon"></i>Bonus Maîtrise:</label>
+                                    <input type="number" class="small-numeric-input" data-key="proficiencyBonus" value="2">
+                                </div>
+                                <div class="mt-5 border-t pt-4">
+                                     <h3 class="section-title text-base mb-3 !border-b-0 !pb-0"><i data-lucide="shield-check"></i>Jets de Sauvegarde</h3>
+                                     <ul class="space-y-2">
+                                        <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowStrength"> <span class="w-10 font-medium text-red-700">For:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowStrengthValue" readonly></li>
+                                        <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowDexterity"> <span class="w-10 font-medium text-green-700">Dex:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowDexterityValue" readonly></li>
+                                        <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowConstitution"> <span class="w-10 font-medium text-blue-700">Con:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowConstitutionValue" readonly></li>
+                                        <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowIntelligence"> <span class="w-10 font-medium text-purple-700">Int:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowIntelligenceValue" readonly></li>
+                                        <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowWisdom"> <span class="w-10 font-medium text-yellow-700">Sag:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowWisdomValue" readonly></li>
+                                        <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowCharisma"> <span class="w-10 font-medium text-pink-700">Cha:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowCharismaValue" readonly></li>
+                                    </ul>
+                                </div>
                             </div>
-                            <div class="mt-5 border-t pt-4">
-                                 <h3 class="section-title text-base mb-3 !border-b-0 !pb-0"><i data-lucide="shield-check"></i>Jets de Sauvegarde</h3>
-                                 <ul class="space-y-2">
-                                    <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowStrength"> <span class="w-10 font-medium text-red-700">For:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowStrengthValue" readonly></li>
-                                    <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowDexterity"> <span class="w-10 font-medium text-green-700">Dex:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowDexterityValue" readonly></li>
-                                    <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowConstitution"> <span class="w-10 font-medium text-blue-700">Con:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowConstitutionValue" readonly></li>
-                                    <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowIntelligence"> <span class="w-10 font-medium text-purple-700">Int:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowIntelligenceValue" readonly></li>
-                                    <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowWisdom"> <span class="w-10 font-medium text-yellow-700">Sag:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowWisdomValue" readonly></li>
-                                    <li class="flex items-center"><input type="checkbox" class="proficiency-toggle" data-skill="savingThrowCharisma"> <span class="w-10 font-medium text-pink-700">Cha:</span> <input type="number" class="w-16 ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="savingThrowCharismaValue" readonly></li>
+                        </section>
+                        <section class="section-card" id="attacks-spells-section" data-section-id="attacks-spells">
+                             <h2 class="section-title"><i data-lucide="sword"></i>Attaques et Incantations<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
+                            <div class="section-content">
+                                <ul id="attack-list" class="mb-4"></ul>
+                                <div class="grid grid-cols-3 gap-2 mb-3">
+                                     <input type="text" id="attack-name" placeholder="Nom attaque" class="col-span-3 md:col-span-1">
+                                     <input type="text" id="attack-bonus" placeholder="Bonus Att." class="col-span-1">
+                                     <input type="text" id="attack-damage" placeholder="Dégâts/Type" class="col-span-2 md:col-span-1">
+                                </div>
+                                 <button id="add-attack-btn" class="bg-blue-500 hover:bg-blue-600">
+                                    <i data-lucide="plus-circle"></i> Ajouter Attaque
+                                </button>
+                            </div>
+                        </section>
+                        <section class="section-card" id="personality-section" data-section-id="personality">
+                            <h2 class="section-title"><i data-lucide="drama"></i>Personnalité<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
+                            <div class="section-content">
+                                <div class="space-y-4">
+                                    <div><label class="font-medium block mb-1"><i data-lucide="quote" class="label-icon"></i>Traits de Personnalité</label><textarea data-key="personalityTraits" class="w-full h-20"></textarea></div>
+                                     <div><label class="font-medium block mb-1"><i data-lucide="scale" class="label-icon"></i>Idéaux</label><textarea data-key="ideals" class="w-full h-20"></textarea></div>
+                                     <div><label class="font-medium block mb-1"><i data-lucide="link-2" class="label-icon"></i>Liens</label><textarea data-key="bonds" class="w-full h-20"></textarea></div>
+                                     <div><label class="font-medium block mb-1"><i data-lucide="thumbs-down" class="label-icon"></i>Défauts</label><textarea data-key="flaws" class="w-full h-20"></textarea></div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="space-y-6">
+                        <section class="section-card" id="skills-section" data-section-id="skills">
+                            <h2 class="section-title"><i data-lucide="list-checks"></i>Compétences<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
+                             <div class="section-content">
+                                 <ul id="skills-list-ul" class="space-y-1 text-sm">
+                                    {/* Les compétences seront générées ici par JS et triées */}
                                 </ul>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="section-card" id="combat-stats-section" data-section-id="combat-stats">
-                         <h2 class="section-title"><i data-lucide="swords"></i>Combat<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
-                        <div class="section-content">
-                            <div class="grid grid-cols-3 gap-4 text-center mb-5">
-                                <div class="bg-gray-100 p-3 rounded-lg flex flex-col items-center">
-                                    <label class="block font-medium text-sm mb-1"><i data-lucide="shield" class="label-icon"></i>CA</label>
-                                    <input type="number" class="text-xl font-bold w-20 text-center bg-transparent" data-key="armorClass" value="10">
+                                 <div class="mt-5 border-t pt-4">
+                                    <label class="font-medium"><i data-lucide="binoculars" class="label-icon"></i>Perception Passive:</label>
+                                    <input type="number" class="w-16 inline-block ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="passivePerception" readonly>
                                 </div>
-                                <div class="bg-gray-100 p-3 rounded-lg flex flex-col items-center">
-                                    <label class="block font-medium text-sm mb-1"><i data-lucide="gauge-circle" class="label-icon"></i>Initiative</label>
-                                    <input type="number" class="text-xl font-bold w-20 text-center bg-transparent text-gray-600" data-key="initiative" readonly>
+                             </div>
+                        </section>
+                        <section class="section-card" id="combat-stats-section" data-section-id="combat-stats">
+                            <h2 class="section-title"><i data-lucide="swords"></i>Combat<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
+                            <div class="section-content">
+                                <div class="grid grid-cols-3 gap-4 text-center mb-5">
+                                    <div class="bg-gray-100 p-3 rounded-lg flex flex-col items-center">
+                                        <label class="block font-medium text-sm mb-1"><i data-lucide="shield" class="label-icon"></i>CA</label>
+                                        <input type="number" class="text-xl font-bold w-20 text-center bg-transparent" data-key="armorClass" value="10">
+                                    </div>
+                                    <div class="bg-gray-100 p-3 rounded-lg flex flex-col items-center">
+                                        <label class="block font-medium text-sm mb-1"><i data-lucide="gauge-circle" class="label-icon"></i>Initiative</label>
+                                        <input type="number" class="text-xl font-bold w-20 text-center bg-transparent text-gray-600" data-key="initiative" readonly>
+                                    </div>
+                                    <div class="bg-gray-100 p-3 rounded-lg flex flex-col items-center">
+                                        <label class="block font-medium text-sm mb-1"><i data-lucide="footprints" class="label-icon"></i>Vitesse</label>
+                                        <input type="text" class="text-xl font-bold w-20 text-center bg-transparent" data-key="speed" value="9m">
+                                    </div>
                                 </div>
-                                <div class="bg-gray-100 p-3 rounded-lg flex flex-col items-center">
-                                    <label class="block font-medium text-sm mb-1"><i data-lucide="footprints" class="label-icon"></i>Vitesse</label>
-                                    <input type="text" class="text-xl font-bold w-20 text-center bg-transparent" data-key="speed" value="9m">
+                                <div class="border-t pt-4 space-y-3">
+                                    <div><label class="font-medium"><i data-lucide="heart" class="label-icon text-red-500"></i>PV Max:</label><input type="number" class="small-numeric-input" data-key="maxHp" value="10"></div>
+                                    <div><label class="font-medium"><i data-lucide="heart-pulse" class="label-icon text-red-600"></i>PV Actuels:</label><input type="number" class="small-numeric-input" data-key="currentHp" value="10"></div>
+                                    <div><label class="font-medium"><i data-lucide="heart-off" class="label-icon text-blue-500"></i>PV Temp:</label><input type="number" class="small-numeric-input" data-key="tempHp" value="0"></div>
+                                </div>
+                                <div class="mt-4 border-t pt-4 space-y-2">
+                                    <div><label class="font-medium"><i data-lucide="dice-5" class="label-icon"></i>Dés de Vie:</label><span class="editable ml-2" data-key="totalHitDice">1d10</span></div>
+                                    <div><label class="font-medium"><i data-lucide="dice-3" class="label-icon"></i>Dés Restants:</label><input type="number" class="small-numeric-input" data-key="remainingHitDice" value="1"></div>
+                                </div>
+                                <div class="mt-5 text-center border-t pt-4">
+                                    <h3 class="font-medium mb-2"><i data-lucide="skull" class="label-icon"></i>Jets contre la Mort</h3>
+                                    <div class="death-saves-container">
+                                        <div class="death-save-group"><label class="text-green-600 font-semibold">Succès</label><div class="death-save-checkboxes"><input type="checkbox" data-key="deathSaveSuccess1"><input type="checkbox" data-key="deathSaveSuccess2"><input type="checkbox" data-key="deathSaveSuccess3"></div></div>
+                                        <div class="death-save-group"><label class="text-red-600 font-semibold">Échecs</label><div class="death-save-checkboxes"><input type="checkbox" data-key="deathSaveFailure1"><input type="checkbox" data-key="deathSaveFailure2"><input type="checkbox" data-key="deathSaveFailure3"></div></div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="border-t pt-4 space-y-3">
-                                <div><label class="font-medium"><i data-lucide="heart" class="label-icon text-red-500"></i>PV Max:</label><input type="number" class="small-numeric-input" data-key="maxHp" value="10"></div>
-                                <div><label class="font-medium"><i data-lucide="heart-pulse" class="label-icon text-red-600"></i>PV Actuels:</label><input type="number" class="small-numeric-input" data-key="currentHp" value="10"></div>
-                                <div><label class="font-medium"><i data-lucide="heart-off" class="label-icon text-blue-500"></i>PV Temp:</label><input type="number" class="small-numeric-input" data-key="tempHp" value="0"></div>
+                        </section>
+                        <section class="section-card" id="other-proficiencies-section" data-section-id="other-proficiencies">
+                             <h2 class="section-title"><i data-lucide="languages"></i>Autres Maîtrises & Langues<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
+                            <div class="section-content">
+                                <textarea data-key="otherProficiencies" class="w-full h-24" placeholder="Listez les maîtrises d'armures, armes, outils, langues..."></textarea>
                             </div>
-                            <div class="mt-4 border-t pt-4 space-y-2">
-                                <div><label class="font-medium"><i data-lucide="dice-5" class="label-icon"></i>Dés de Vie:</label><span class="editable ml-2" data-key="totalHitDice">1d10</span></div>
-                                <div><label class="font-medium"><i data-lucide="dice-3" class="label-icon"></i>Dés Restants:</label><input type="number" class="small-numeric-input" data-key="remainingHitDice" value="1"></div>
+                         </section>
+                        <section class="section-card" id="features-traits-section" data-section-id="features-traits">
+                            <h2 class="section-title"><i data-lucide="star"></i>Capacités et Traits<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
+                            <div class="section-content">
+                                <textarea data-key="featuresTraits" class="w-full h-48" placeholder="Décrivez les capacités et traits ici..."></textarea>
                             </div>
-                            <div class="mt-5 text-center border-t pt-4">
-                                <h3 class="font-medium mb-2"><i data-lucide="skull" class="label-icon"></i>Jets contre la Mort</h3>
-                                <div class="death-saves-container">
-                                    <div class="death-save-group"><label class="text-green-600 font-semibold">Succès</label><div class="death-save-checkboxes"><input type="checkbox" data-key="deathSaveSuccess1"><input type="checkbox" data-key="deathSaveSuccess2"><input type="checkbox" data-key="deathSaveSuccess3"></div></div>
-                                    <div class="death-save-group"><label class="text-red-600 font-semibold">Échecs</label><div class="death-save-checkboxes"><input type="checkbox" data-key="deathSaveFailure1"><input type="checkbox" data-key="deathSaveFailure2"><input type="checkbox" data-key="deathSaveFailure3"></div></div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="section-card" id="attacks-spells-section" data-section-id="attacks-spells">
-                         <h2 class="section-title"><i data-lucide="sword"></i>Attaques et Incantations<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
-                        <div class="section-content">
-                            <ul id="attack-list" class="mb-4"></ul>
-                            <div class="grid grid-cols-3 gap-2 mb-3">
-                                 <input type="text" id="attack-name" placeholder="Nom attaque" class="col-span-3 md:col-span-1">
-                                 <input type="text" id="attack-bonus" placeholder="Bonus Att." class="col-span-1">
-                                 <input type="text" id="attack-damage" placeholder="Dégâts/Type" class="col-span-2 md:col-span-1">
-                            </div>
-                             <button id="add-attack-btn" class="bg-blue-500 hover:bg-blue-600">
-                                <i data-lucide="plus-circle"></i> Ajouter Attaque
-                            </button>
-                        </div>
-                    </section>
-
-                    <section class="section-card" id="skills-section" data-section-id="skills">
-                        <h2 class="section-title"><i data-lucide="list-checks"></i>Compétences<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
-                         <div class="section-content">
-                             <ul id="skills-list-ul" class="space-y-1 text-sm">
-                                {/* Les compétences seront ajoutées ici par JS et triées */}
-                            </ul>
-                             <div class="mt-5 border-t pt-4">
-                                <label class="font-medium"><i data-lucide="binoculars" class="label-icon"></i>Perception Passive:</label>
-                                <input type="number" class="w-16 inline-block ml-2 p-1 text-center font-semibold bg-gray-100 rounded" data-key="passivePerception" readonly>
-                            </div>
-                         </div>
-                    </section>
-
-                    <section class="section-card" id="features-traits-section" data-section-id="features-traits">
-                        <h2 class="section-title"><i data-lucide="star"></i>Capacités et Traits<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
-                        <div class="section-content">
-                            <textarea data-key="featuresTraits" class="w-full h-48" placeholder="Décrivez les capacités et traits ici..."></textarea>
-                        </div>
-                    </section>
-
-                    <section class="section-card" id="other-proficiencies-section" data-section-id="other-proficiencies">
-                         <h2 class="section-title"><i data-lucide="languages"></i>Autres Maîtrises & Langues<i data-lucide="chevron-down" class="toggle-icon"></i></h2>
-                        <div class="section-content">
-                            <textarea data-key="otherProficiencies" class="w-full h-24" placeholder="Listez les maîtrises d'armures, armes, outils, langues..."></textarea>
-                        </div>
-                     </section>
+                        </section>
+                    </div>
                 </div>
             </div>
 
@@ -426,13 +436,13 @@
         // --- NOUVEAU: Configuration Firebase ---
         // REMPLACEZ CECI PAR VOTRE PROPRE CONFIGURATION FIREBASE
         const firebaseConfig = {
-          apiKey: "AIzaSyDdVS4U-upbCN8mBna7-aKnGk9zy8uFqro",
-          authDomain: "dnd-gllg.firebaseapp.com",
-          projectId: "dnd-gllg",
-          storageBucket: "dnd-gllg.firebasestorage.app",
-          messagingSenderId: "119479686965",
-          appId: "1:119479686965:web:656bc34afa9bd807c51e7c",
-          measurementId: "G-CYHCJZLX1P"
+            apiKey: "AIzaSyDdVS4U-upbCN8mBna7-aKnGk9zy8uFqro",
+  authDomain: "dnd-gllg.firebaseapp.com",
+  projectId: "dnd-gllg",
+  storageBucket: "dnd-gllg.firebasestorage.app",
+  messagingSenderId: "119479686965",
+  appId: "1:119479686965:web:656bc34afa9bd807c51e7c",
+  measurementId: "G-CYHCJZLX1P"
         };
 
         // Initialiser Firebase
@@ -672,7 +682,7 @@
             populateInventoryLists(data.inventory || []);
             populateList('#attack-list', data.attacks || [], renderAttackItem);
             populateList('#spell-list', data.spells || [], renderSpellItem);
-            sortSkillsList(); // Trier les compétences après le peuplement
+            initializeAndSortSkills(data.proficiencies || {});
          }
 
         // --- Gestion des Listes ---
@@ -712,20 +722,48 @@
 
         function showSaveStatus(message, color = 'green') { /* ... (Identique à v14) ... */ const saveStatus = document.getElementById('save-status'); saveStatus.textContent = message; saveStatus.className = `text-sm font-medium mt-2 text-${color}-700`; setTimeout(() => { saveStatus.textContent = ''; }, 5000); }
 
-        // NOUVEAU: Fonction pour trier les compétences
-        function sortSkillsList() {
-            const skillsList = document.getElementById('skills-list-ul');
-            if (!skillsList) return;
+        // NOUVEAU: Fonction pour initialiser et trier les compétences
+        function initializeAndSortSkills(savedProficiencies) {
+            const skillsListUl = document.getElementById('skills-list-ul');
+            if (!skillsListUl) return;
+            skillsListUl.innerHTML = ''; // Vider la liste
 
-            const items = Array.from(skillsList.querySelectorAll('li'));
-            items.sort((a, b) => {
-                const textA = a.querySelector('span').textContent.trim().toLowerCase();
-                const textB = b.querySelector('span').textContent.trim().toLowerCase();
-                if (textA < textB) return -1;
-                if (textA > textB) return 1;
-                return 0;
+            const allSkills = [
+                { name: 'Acrobaties', attribute: 'Dex', key: 'acrobatics', color: 'text-green-700' },
+                { name: 'Arcanes', attribute: 'Int', key: 'arcana', color: 'text-purple-700' },
+                { name: 'Athlétisme', attribute: 'For', key: 'athletics', color: 'text-red-700' },
+                { name: 'Discrétion', attribute: 'Dex', key: 'stealth', color: 'text-green-700' },
+                { name: 'Dressage', attribute: 'Sag', key: 'animalHandling', color: 'text-yellow-700' },
+                { name: 'Escamotage', attribute: 'Dex', key: 'sleightOfHand', color: 'text-green-700' },
+                { name: 'Histoire', attribute: 'Int', key: 'history', color: 'text-purple-700' },
+                { name: 'Intimidation', attribute: 'Cha', key: 'intimidation', color: 'text-pink-700' },
+                { name: 'Intuition', attribute: 'Sag', key: 'insight', color: 'text-yellow-700' },
+                { name: 'Investigation', attribute: 'Int', key: 'investigation', color: 'text-purple-700' },
+                { name: 'Médecine', attribute: 'Sag', key: 'medicine', color: 'text-yellow-700' },
+                { name: 'Nature', attribute: 'Int', key: 'nature', color: 'text-purple-700' },
+                { name: 'Perception', attribute: 'Sag', key: 'perception', color: 'text-yellow-700' },
+                { name: 'Persuasion', attribute: 'Cha', key: 'persuasion', color: 'text-pink-700' },
+                { name: 'Religion', attribute: 'Int', key: 'religion', color: 'text-purple-700' },
+                { name: 'Représentation', attribute: 'Cha', key: 'performance', color: 'text-pink-700' },
+                { name: 'Survie', attribute: 'Sag', key: 'survival', color: 'text-yellow-700' },
+                { name: 'Tromperie', attribute: 'Cha', key: 'deception', color: 'text-pink-700' }
+            ];
+
+            // Trier les compétences par nom
+            allSkills.sort((a, b) => a.name.localeCompare(b.name));
+
+            allSkills.forEach(skill => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center';
+                const isProficient = savedProficiencies[skill.key] || false;
+
+                li.innerHTML = `
+                    <input type="checkbox" class="proficiency-toggle" data-skill="${skill.key}" ${isProficient ? 'checked' : ''}>
+                    <span class="w-32 ${skill.color}">${skill.name} (${skill.attribute}):</span>
+                    <input type="number" class="w-16 ml-auto p-1 text-center font-semibold bg-gray-100 rounded" data-key="${skill.key}Value" readonly>
+                `;
+                skillsListUl.appendChild(li);
             });
-            items.forEach(item => skillsList.appendChild(item)); // Réinsérer les éléments triés
         }
 
 
@@ -734,7 +772,7 @@
             initializeSpellSlotsGrid();
             loadDataFromFirebase().then(() => {
                  updateDependentValues();
-                 sortSkillsList(); // Trier les compétences après le chargement des données
+                 // initializeAndSortSkills est appelé dans populatePage maintenant
                  lucide.createIcons();
             });
 
@@ -745,7 +783,6 @@
             });
             document.querySelectorAll('.section-title').forEach(title => { title.addEventListener('click', (event) => { if (event.target.closest('input, span.editable')) { return; } const sectionCard = title.closest('.section-card'); if (sectionCard) { sectionCard.classList.toggle('collapsed'); } }); });
 
-            // Header image retiré
             const charImgInput = document.getElementById('character-image-url'); const charImgPreview = document.getElementById('character-image-preview'); charImgInput?.addEventListener('change', () => { charImgPreview.src = charImgInput.value || 'https://placehold.co/150x150/e2e8f0/adb5bd?text=Perso'; });
             const famImgInput = document.getElementById('familiar-image-url'); const famImgPreview = document.getElementById('familiar-image-preview'); famImgInput?.addEventListener('change', () => { famImgPreview.src = famImgInput.value || 'https://placehold.co/150x150/e2e8f0/adb5bd?text=Familier'; });
 
