@@ -95,7 +95,7 @@
 <body class="p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto">
-        <h1 class="text-4xl font-bold mb-8 text-center text-stone-800" style="font-family: 'Merriweather', serif;">D&D 5e - Personnage</h1>
+        <h1 class="text-4xl font-bold mb-8 text-center text-stone-800" style="font-family: 'Merriweather', serif;">Fiche de Personnage D&D 5e</h1>
 
         <nav id="main-tabs-nav">
             <button class="main-tab-button active" data-tab-target="tab-personnage">Personnage</button>
@@ -115,7 +115,7 @@
                             <div class="section-content">
                                 <div class="character-image-container">
                                     <img id="character-image-preview" src="https://placehold.co/150x150/e2e8f0/adb5bd?text=Perso" alt="Aperçu Personnage" class="image-preview" onerror="this.src='https://placehold.co/150x150/e2e8f0/adb5bd?text=Perso';">
-                                    <label for="character-image-url" class="text-xs block text-center"></label>
+                                    <label for="character-image-url" class="text-xs block text-center">URL Image Personnage:</label>
                                     <input type="text" id="character-image-url" data-key="characterImageUrl" placeholder="https://..." class="image-url-input">
                                 </div>
                                 <div class="space-y-3">
@@ -516,7 +516,7 @@
             if (!db) {
                 showSaveStatus("Firebase n'est pas initialisé. Impossible de charger.", "red");
                 populatePage(getDefaultData());
-                return;
+                return getDefaultData();
             }
             showSaveStatus("Chargement depuis Firebase...", "blue");
             try {
@@ -525,17 +525,23 @@
 
                 if (docSnap.exists) {
                     console.log("Données chargées depuis Firebase:", docSnap.data());
-                    populatePage(docSnap.data());
+                    const firebaseData = docSnap.data();
+                    populatePage(firebaseData);
                     showSaveStatus("Données chargées depuis Firebase !", "green");
+                    return firebaseData;
                 } else {
                     console.log("Aucun document trouvé sur Firebase. Chargement des données par défaut.");
-                    populatePage(getDefaultData());
+                    const defaultData = getDefaultData();
+                    populatePage(defaultData);
                     showSaveStatus("Aucune donnée sur Firebase. Fiche vierge chargée.", "yellow");
+                    return defaultData;
                 }
             } catch (error) {
                 console.error("Erreur de chargement depuis Firebase: ", error);
                 showSaveStatus("Erreur chargement Firebase. Données par défaut chargées.", "red");
-                populatePage(getDefaultData());
+                const defaultDataOnError = getDefaultData();
+                populatePage(defaultDataOnError);
+                return defaultDataOnError;
             }
         }
 
@@ -677,12 +683,12 @@
             activateInventoryTab(data.activeInventoryTab || 'inventory-armes');
             activateRaceClassTab(data.activeRaceClassTab || 'race-info');
 
+            initializeAndSortSkills(data.proficiencies || {}); // Appel AVANT updateDependentValues
             populateSpellSlots(data.spellSlotsTotals || {}, data.spellSlotsUsed || {});
-            updateDependentValues();
+            updateDependentValues(); // S'assurer que les valeurs calculées sont à jour après le peuplement des bases
             populateInventoryLists(data.inventory || []);
             populateList('#attack-list', data.attacks || [], renderAttackItem);
             populateList('#spell-list', data.spells || [], renderSpellItem);
-            initializeAndSortSkills(data.proficiencies || {});
          }
 
         // --- Gestion des Listes ---
@@ -715,17 +721,48 @@
         function activateRaceClassTab(targetTabId) { activateTab(raceClassTabButtonsContainer, raceClassTabContentContainer, targetTabId); }
 
         // --- Gestion Emplacements de Sorts (Checkboxes) ---
-        const spellSlotsContainer = document.getElementById('spell-slots-container');
-        function initializeSpellSlotsGrid() { /* ... (Identique à v14) ... */ if (!spellSlotsContainer) return; spellSlotsContainer.innerHTML = ''; for (let level = 1; level <= 9; level++) { const levelLabel = document.createElement('label'); levelLabel.textContent = `Niv. ${level}:`; levelLabel.htmlFor = `spell-slots-total-${level}`; spellSlotsContainer.appendChild(levelLabel); const totalInput = document.createElement('input'); totalInput.type = 'number'; totalInput.id = `spell-slots-total-${level}`; totalInput.dataset.key = `spellSlotsTotal${level}`; totalInput.min = '0'; totalInput.value = '0'; totalInput.classList.add('spell-slots-total-input'); totalInput.dataset.level = level; spellSlotsContainer.appendChild(totalInput); const checkboxesContainer = document.createElement('div'); checkboxesContainer.classList.add('spell-slot-checkboxes'); checkboxesContainer.dataset.level = level; spellSlotsContainer.appendChild(checkboxesContainer); } }
-        function generateSpellSlotCheckboxes(level, total, usedStates = []) { /* ... (Identique à v14) ... */ const container = spellSlotsContainer?.querySelector(`.spell-slot-checkboxes[data-level="${level}"]`); if (!container) return; container.innerHTML = ''; total = Math.max(0, parseInt(total) || 0); for (let i = 0; i < total; i++) { const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.checked = usedStates[i] || false; checkbox.dataset.slotIndex = i; checkbox.addEventListener('change', () => { /* saveDataToFirebase(collectDataFromPage()); */ }); container.appendChild(checkbox); } }
-        function populateSpellSlots(totals, used) { /* ... (Identique à v14, avec vérification existence spellSlotsContainer) ... */ if (!spellSlotsContainer) { console.error("Conteneur d'emplacements de sorts introuvable !"); return; } for (let level = 1; level <= 9; level++) { const totalInput = spellSlotsContainer.querySelector(`[data-key="spellSlotsTotal${level}"]`); if (totalInput) { const totalValue = totals[level] || 0; totalInput.value = totalValue; generateSpellSlotCheckboxes(level, totalValue, used[level] || []); } } }
+        let spellSlotsContainer; // Défini dans DOMContentLoaded
+        function initializeSpellSlotsGrid() {
+            spellSlotsContainer = document.getElementById('spell-slots-container');
+            if (!spellSlotsContainer) { console.error("Conteneur d'emplacements de sorts (spellSlotsContainer) introuvable lors de l'initialisation !"); return; }
+            spellSlotsContainer.innerHTML = '';
+            for (let level = 1; level <= 9; level++) {
+                const levelLabel = document.createElement('label'); levelLabel.textContent = `Niv. ${level}:`; levelLabel.htmlFor = `spell-slots-total-${level}`; spellSlotsContainer.appendChild(levelLabel);
+                const totalInput = document.createElement('input'); totalInput.type = 'number'; totalInput.id = `spell-slots-total-${level}`; totalInput.dataset.key = `spellSlotsTotal${level}`; totalInput.min = '0'; totalInput.value = '0'; totalInput.classList.add('spell-slots-total-input'); totalInput.dataset.level = level; spellSlotsContainer.appendChild(totalInput);
+                const checkboxesContainer = document.createElement('div'); checkboxesContainer.classList.add('spell-slot-checkboxes'); checkboxesContainer.dataset.level = level; spellSlotsContainer.appendChild(checkboxesContainer);
+            }
+        }
+        function generateSpellSlotCheckboxes(level, total, usedStates = []) {
+            const container = spellSlotsContainer?.querySelector(`.spell-slot-checkboxes[data-level="${level}"]`);
+            if (!container) return;
+            container.innerHTML = ''; total = Math.max(0, parseInt(total) || 0);
+            for (let i = 0; i < total; i++) {
+                const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.checked = usedStates[i] || false; checkbox.dataset.slotIndex = i;
+                checkbox.addEventListener('change', () => { /* saveDataToFirebase(collectDataFromPage()); */ });
+                container.appendChild(checkbox);
+            }
+        }
+        function populateSpellSlots(totals, used) {
+            if (!spellSlotsContainer) { console.error("Conteneur d'emplacements de sorts introuvable lors du peuplement !"); return; }
+            for (let level = 1; level <= 9; level++) {
+                const totalInput = spellSlotsContainer.querySelector(`[data-key="spellSlotsTotal${level}"]`);
+                if (totalInput) {
+                    const totalValue = totals[level] || 0;
+                    totalInput.value = totalValue;
+                    generateSpellSlotCheckboxes(level, totalValue, used[level] || []);
+                }
+            }
+        }
 
-        function showSaveStatus(message, color = 'green') { /* ... (Identique à v14) ... */ const saveStatus = document.getElementById('save-status'); saveStatus.textContent = message; saveStatus.className = `text-sm font-medium mt-2 text-${color}-700`; setTimeout(() => { saveStatus.textContent = ''; }, 5000); }
+        function showSaveStatus(message, color = 'green') { const saveStatus = document.getElementById('save-status'); if(saveStatus) { saveStatus.textContent = message; saveStatus.className = `text-sm font-medium mt-2 text-${color}-700`; setTimeout(() => { saveStatus.textContent = ''; }, 5000); } else { console.log("Save status element not found"); } }
 
         // NOUVEAU: Fonction pour initialiser et trier les compétences
         function initializeAndSortSkills(savedProficiencies) {
             const skillsListUl = document.getElementById('skills-list-ul');
-            if (!skillsListUl) return;
+            if (!skillsListUl) {
+                console.error("L'élément UL pour les compétences (skills-list-ul) est introuvable.");
+                return;
+            }
             skillsListUl.innerHTML = ''; // Vider la liste
 
             const allSkills = [
@@ -770,9 +807,10 @@
         // --- Initialisation et Écouteurs d'Événements ---
         document.addEventListener('DOMContentLoaded', () => {
             initializeSpellSlotsGrid();
-            loadDataFromFirebase().then(() => {
-                 updateDependentValues();
-                 // initializeAndSortSkills est appelé dans populatePage maintenant
+            loadDataFromFirebase().then((loadedData) => {
+                 const dataToUse = loadedData || getDefaultData();
+                 initializeAndSortSkills(dataToUse.proficiencies || {});
+                 populatePage(dataToUse);
                  lucide.createIcons();
             });
 
