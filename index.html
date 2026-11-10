@@ -2,80 +2,47 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CDK – Outils et liens</title>
 <meta name="description" content="Mes outils JDR, professionnels et perso, et mon tableau de bord de liens.">
 <meta name="color-scheme" content="light dark">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+<meta name="theme-color" content="#12161f">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#f1f3f6;--surface:#fff;--ink:#1a2030;--muted:#5a6477;--line:#d8dde6;--focus:#2d5fd0;
-  --head:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
-  --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-}
-@media (prefers-color-scheme:dark){
-  :root{--bg:#12161f;--surface:#1b2130;--ink:#e8ebf2;--muted:#98a1b3;--line:#2b3447;--focus:#8fb0ff}
-}
-*{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);
-  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
-.wrap{max-width:1100px;margin:0 auto;padding:28px 18px 48px}
-header{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:end;justify-content:space-between;margin-bottom:34px}
-h1{font:700 clamp(2.4rem,7vw,3.6rem)/1 var(--head);margin:0;letter-spacing:-.02em}
-header p{margin:6px 0 0;color:var(--muted)}
-.search{flex:1 1 260px;max-width:380px}
-.search input{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit}
-h2{font:700 1.6rem/1.2 var(--head);margin:0 0 18px}
-section.zone{margin-bottom:46px}
-.grp{margin-bottom:26px}
-.grp h3{font:700 1.1rem/1.3 var(--head);margin:0 0 10px;padding-left:10px;border-left:5px solid var(--c)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
-.tiles.small{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
-
-/* Tuile : fond dégradé couleur de rubrique, image en fondu derrière le texte */
-.tile{position:relative;display:flex;align-items:flex-end;min-height:108px;overflow:hidden;
-  border:1px solid var(--line);border-radius:12px;color:inherit;text-decoration:none;
-  background:linear-gradient(105deg,var(--surface) 35%,color-mix(in srgb,var(--c) 24%,var(--surface)))}
-.small .tile{min-height:68px}
-.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75;
-  -webkit-mask-image:linear-gradient(100deg,transparent 15%,#000 90%);
-  mask-image:linear-gradient(100deg,transparent 15%,#000 90%);transition:transform .4s}
-.txt{position:relative;display:block;padding:12px 14px;text-shadow:0 0 8px var(--surface),0 0 3px var(--surface)}
-.name{display:block;font-weight:600}
-.desc{display:block;font-size:.88rem;color:var(--muted)}
-a.tile:hover{border-color:var(--c)}
-a.tile:hover img{transform:scale(1.05)}
-.tile.soon{opacity:.6}
-.badge{font-size:.75rem;margin-left:8px;padding:1px 8px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-weight:400;text-shadow:none}
-.empty{color:var(--muted)}
-a:focus-visible,input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-footer{color:var(--muted);font-size:.85rem}
-@media (prefers-reduced-motion:reduce){.tile img{transition:none}a.tile:hover img{transform:none}}
-</style>
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem("cdk.theme");if(t&&t!=="auto")document.documentElement.dataset.theme=t}catch(e){}</script>
+<script src="data.js"></script>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div>
-      <h1>CDK</h1>
-      <p>Mes outils et mes sites du quotidien</p>
+    <div><h1>CDK</h1><p>Mes outils et mes sites du quotidien</p></div>
+    <div class="bar">
+      <input id="q" type="search" placeholder="Rechercher (touche /)" aria-label="Rechercher un outil ou un site" autocomplete="off">
+      <button class="btn" id="theme" type="button"></button>
+      <button class="btn" id="edit" type="button" aria-pressed="false">Modifier</button>
     </div>
-    <label class="search">
-      <input id="q" type="search" placeholder="Rechercher un outil ou un site" aria-label="Rechercher un outil ou un site" autocomplete="off">
-    </label>
   </header>
 
-  <section class="zone" aria-labelledby="t-outils">
-    <h2 id="t-outils">Mes outils</h2>
+  <div class="admin" id="admin" hidden>
+    <span id="status"></span>
+    <button class="btn sm" id="export" type="button">Exporter data.js</button>
+    <button class="btn sm" id="import" type="button">Importer</button>
+    <button class="btn sm" id="reset" type="button">Revenir à data.js</button>
+    <input id="file" type="file" accept=".js,.json" hidden>
+  </div>
+
+  <div id="quick"></div>
+
+  <section class="zone" aria-labelledby="t1">
+    <div class="zh"><h2 id="t1">Mes outils</h2><button class="btn sm edit-only" type="button" data-a="newgrp" data-z="tools">+ Rubrique</button></div>
     <div id="tools"></div>
   </section>
-
-  <section class="zone" aria-labelledby="t-sites">
-    <h2 id="t-sites">Mes sites</h2>
+  <section class="zone" aria-labelledby="t2">
+    <div class="zh"><h2 id="t2">Mes sites</h2><button class="btn sm edit-only" type="button" data-a="newgrp" data-z="links">+ Rubrique</button></div>
     <div id="links"></div>
   </section>
 
@@ -83,102 +50,161 @@ footer{color:var(--muted);font-size:.85rem}
   <footer>© 2026 – Essais Web CDK</footer>
 </div>
 
+<dialog id="dlg">
+  <form method="dialog" id="f">
+    <h3 id="dt" style="border:0;padding:0;margin-bottom:12px"></h3>
+    <label>Rubrique<select id="fg"></select></label>
+    <label>Nom<input id="fn" required></label>
+    <label>Description<input id="fd"></label>
+    <label>Adresse du lien<input id="fu" required placeholder="dnd/initiative.html ou https://…"></label>
+    <label>Image (facultatif)<input id="fi" placeholder="img/mon-image.jpg"></label>
+    <label class="chk"><input type="checkbox" id="fs"> Pas encore créé (bientôt)</label>
+    <div class="acts"><button class="btn" value="cancel" formnovalidate>Annuler</button><button class="btn primary" value="ok">Enregistrer</button></div>
+  </form>
+</dialog>
+
 <script>
-/* ===== À MODIFIER ICI =====
-   i:"img/mon-image.jpg" → image en fondu derrière la tuile (facultatif).
-   soon:true             → outil pas encore créé (grisé, non cliquable).
-   Conseil images : environ 600×300 px, JPG ou WebP, moins de 100 Ko, dans le dossier img/. */
-var GAS = "https://script.google.com/macros/s/";
-var TOOLS = [
-  {t:"Notes autonomes", c:"#b7791f", items:[
-    {n:"Mes notes", d:"Arborescence, tags, liens wiki", u:"notes/index.html", i:""}
-  ]},
-  {t:"Outils professionnels", c:"#3b6fb6", items:[
-    {n:"WebProjet", d:"Reporting coordinateurs", u:"Tests/WebProjet_SQL.html", i:""},
-    {n:"Automatisation de tâches", d:"Scripts et automatisations", u:"outils_pro/automatisation_tache.html", i:""},
-    {n:"Générateur de procédures", d:"Étapes et critères de vérification, export Markdown", u:"outils_pro/procedures.html", i:"", soon:true}
-  ]},
-  {t:"Donjons & Dragons", c:"#b5413a", items:[
-    {n:"Feuille de personnage", d:"Fiche en ligne", u:GAS+"AKfycby264fC2IQSWop1L4N1c21ZtA_jOkmUlnN9VRxsj7RsDh6R97OFl_yu27Pa-HveQTAg/exec", i:""},
-    {n:"Aide de jeu", d:"Règles et repères pour la table", u:"dnd/aide_de_jeu.html", i:""},
-    {n:"Gestionnaire d’initiative", d:"Ordre de tour, PV, conditions", u:"dnd/initiative.html", i:"", soon:true},
-    {n:"Générateur de PNJ et de rencontres", d:"Noms, traits, rencontres aléatoires", u:"dnd/generateur.html", i:"", soon:true}
-  ]},
-  {t:"Star Wars", c:"#1f8a8a", items:[
-    {n:"Fiche de personnage", d:"Fiche en ligne", u:GAS+"AKfycbzOsBLBklWYBr16zH_XsH4iZGsp37VFP1PtS6FodqHjww8V-JoHJ36myfB1U3v0OqH8/exec", i:""},
-    {n:"Création de personnage", d:"Assistant de création", u:"starwars/creation_perso.html", i:""},
-    {n:"Lanceur de dés narratifs", d:"Résultat résumé : succès, avantages, Force", u:"starwars/des.html", i:"", soon:true},
-    {n:"Réserve de Destin", d:"Points de Force et de côté obscur", u:"starwars/destin.html", i:"", soon:true}
-  ]},
-  {t:"Perso", c:"#7a5fb0", items:[
-    {n:"Budget", d:"Suivi du budget", u:GAS+"AKfycbwh_JsvB-DHLt2mk2THG0JaXrVXAdn-0muMD1RtLE5bH4Md2v-ktO9439fevbhZCOteRQ/exec", i:""},
-    {n:"KDO", d:"Idées et listes de cadeaux", u:GAS+"AKfycbw50rysxhSyiuqUkWsoUMvlj6Oc45XrP8U5gPlpd6MANoHprMTgXZxZoCav2WbOjrO2/exec", i:""}
-  ]}
-];
-var LINKS = [
-  {t:"Jeux vidéo", c:"#c26a1a", items:[
-    {n:"Steam", u:"https://store.steampowered.com/", i:""},
-    {n:"Nintendo", u:"https://www.nintendo.com/fr-fr/", i:""},
-    {n:"Jeuxvideo.com", u:"https://www.jeuxvideo.com/", i:""}
-  ]},
-  {t:"Finances", c:"#2f8f5b", items:[
-    {n:"Impots.gouv.fr", u:"https://www.impots.gouv.fr/", i:""},
-    {n:"Service-public.fr", u:"https://www.service-public.fr/", i:""}
-  ]},
-  {t:"Actualités", c:"#4f6bd6", items:[
-    {n:"Franceinfo", u:"https://www.franceinfo.fr/", i:""},
-    {n:"Le Monde", u:"https://www.lemonde.fr/", i:""},
-    {n:"Numerama", u:"https://www.numerama.com/", i:""}
-  ]},
-  {t:"Développement", c:"#6b7280", items:[
-    {n:"GitHub", u:"https://github.com/", i:""},
-    {n:"MDN Web Docs", u:"https://developer.mozilla.org/fr/", i:""},
-    {n:"Stack Overflow", u:"https://stackoverflow.com/", i:""}
-  ]},
-  {t:"Jeu de rôle", c:"#a23e6b", items:[
-    {n:"D&D Beyond", u:"https://www.dndbeyond.com/", i:""},
-    {n:"AideDD", u:"https://www.aidedd.org/", i:""}
-  ]}
-];
-/* ===== FIN DE LA ZONE À MODIFIER ===== */
-
-function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+(function(){
+var LS=window.localStorage, root=document.documentElement;
+var COLORS=["#b7791f","#3b6fb6","#b5413a","#1f8a8a","#7a5fb0","#c26a1a","#2f8f5b","#a23e6b"], ZONES=["tools","links"];
+function $(id){return document.getElementById(id)}
+function get(k,d){try{var v=LS.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function put(k,v){try{LS.setItem(k,JSON.stringify(v))}catch(e){}}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function norm(s){return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
-
-function render(el, data, q, external, small){
-  var html = "", n = 0;
-  data.forEach(function(g){
-    var items = g.items.filter(function(i){
-      return !q || norm(g.t+" "+i.n+" "+(i.d||"")).indexOf(q) > -1;
-    });
-    if(!items.length) return;
-    n += items.length;
-    html += '<div class="grp" style="--c:'+g.c+'"><h3>'+esc(g.t)+'</h3><div class="tiles'+(small?' small':'')+'">';
-    items.forEach(function(i){
-      var img = i.i ? '<img src="'+esc(i.i)+'" alt="" loading="lazy" onerror="this.remove()">' : '';
-      var txt = '<span class="txt"><span class="name">'+esc(i.n)+(i.soon?'<span class="badge">bientôt</span>':'')+'</span>'
-              + (i.d?'<span class="desc">'+esc(i.d)+'</span>':'')+'</span>';
-      if(i.soon){
-        html += '<div class="tile soon">'+img+txt+'</div>';
-      } else {
-        var ext = external ? ' target="_blank" rel="noopener noreferrer"' : '';
-        html += '<a class="tile" href="'+esc(i.u)+'"'+ext+'>'+img+txt+'</a>';
-      }
-    });
-    html += '</div></div>';
-  });
-  el.innerHTML = html;
-  return n;
+function safe(u){u=String(u||"").trim();return /^(javascript|data|vbscript):/i.test(u)?"#":u}
+function sane(d){
+  if(!d||!Array.isArray(d.tools)||!Array.isArray(d.links))return null;
+  var o={};
+  ZONES.forEach(function(z){o[z]=d[z].map(function(g,k){return {
+    t:String(g.t||"Sans titre"),c:/^#[0-9a-f]{3,8}$/i.test(g.c)?g.c:COLORS[k%COLORS.length],
+    items:(Array.isArray(g.items)?g.items:[]).map(function(i){return {n:String(i.n||""),d:String(i.d||""),u:String(i.u||""),i:String(i.i||""),soon:!!i.soon}})}})});
+  return o;
 }
+var data=sane(get("cdk.data",null))||sane(window.CDK_DATA);
+var fav=get("cdk.fav",[]), rec=get("cdk.rec",[]), closed=get("cdk.closed",[]), edit=false, q="";
 
-function update(){
-  var q = norm(document.getElementById("q").value.trim());
-  var a = render(document.getElementById("tools"), TOOLS, q, false, false);
-  var b = render(document.getElementById("links"), LINKS, q, true, true);
-  document.getElementById("none").hidden = (a+b) > 0;
+function find(k){
+  for(var a=0;a<2;a++)for(var g=0;g<data[ZONES[a]].length;g++){var G=data[ZONES[a]][g];
+    for(var i=0;i<G.items.length;i++){var it=G.items[i];if(ZONES[a]+"|"+it.n+"|"+it.u===k)return {z:ZONES[a],c:G.c,it:it}}}
+  return null;
 }
-document.getElementById("q").addEventListener("input", update);
-update();
+function cell(z,c,gi,ii,it,quick){
+  var k=z+"|"+it.n+"|"+it.u, ext=z==="links"?' target="_blank" rel="noopener noreferrer"':"";
+  var img=it.i?'<img src="'+esc(safe(it.i))+'" alt="" loading="lazy" onerror="this.remove()">':"";
+  var txt='<span class="txt"><span class="name">'+esc(it.n)+(it.soon?'<span class="badge">bientôt</span>':"")+'</span>'+(it.d?'<span class="desc">'+esc(it.d)+'</span>':"")+'</span>';
+  var tile=(it.soon||edit)?'<div class="tile'+(it.soon?" soon":"")+'">'+img+txt+'</div>'
+    :'<a class="tile" data-k="'+esc(k)+'" href="'+esc(safe(it.u))+'"'+ext+'>'+img+txt+'</a>';
+  var d=' data-z="'+z+'" data-g="'+gi+'" data-i="'+ii+'"', f=fav.indexOf(k)>-1, ctl;
+  if(quick||!edit) ctl='<button class="star" type="button" data-a="fav" data-k="'+esc(k)+'" aria-pressed="'+f+'" aria-label="Favori : '+esc(it.n)+'">'+(f?"★":"☆")+'</button>';
+  else ctl='<span class="ctl"><button type="button" data-a="up"'+d+' aria-label="Monter">↑</button><button type="button" data-a="down"'+d+' aria-label="Descendre">↓</button><button type="button" data-a="edit"'+d+' aria-label="Modifier">✎</button><button type="button" data-a="del"'+d+' aria-label="Supprimer">✕</button></span>';
+  return '<div class="cell" style="--c:'+c+'">'+tile+ctl+'</div>';
+}
+function group(z,g,gi){
+  var key=z+"|"+g.t;
+  var items=g.items.map(function(it,ii){return (!q||norm(g.t+" "+it.n+" "+it.d).indexOf(q)>-1)?cell(z,g.c,gi,ii,it,false):""}).join("");
+  if(!items&&!(edit&&!q))return "";
+  var d=' data-z="'+z+'" data-g="'+gi+'"';
+  var ctl=edit?'<span class="ctl2"><button type="button" data-a="add"'+d+' aria-label="Ajouter">＋</button><button type="button" data-a="gren"'+d+' aria-label="Renommer">✎</button><button type="button" data-a="gup"'+d+' aria-label="Monter">↑</button><button type="button" data-a="gdown"'+d+' aria-label="Descendre">↓</button><button type="button" data-a="gdel"'+d+' aria-label="Supprimer">✕</button></span>':"";
+  return '<details class="grp" data-k="'+esc(key)+'" style="--c:'+g.c+'"'+((q||closed.indexOf(key)<0)?" open":"")+'><summary><h3>'+esc(g.t)+'</h3>'+ctl+'</summary><div class="tiles'+(z==="links"?" small":"")+'">'+items+'</div></details>';
+}
+function row(title,keys){
+  var cs=keys.map(function(k){var f=find(k);return f&&!f.it.soon?cell(f.z,f.c,0,0,f.it,true):""}).join("");
+  return cs?'<section class="zone"><h2>'+title+'</h2><div class="tiles small">'+cs+'</div></section>':"";
+}
+function render(){
+  document.body.classList.toggle("edit",edit);
+  ZONES.forEach(function(z){$(z).innerHTML=data[z].map(function(g,gi){return group(z,g,gi)}).join("")});
+  $("quick").innerHTML=(q||edit)?"":row("Favoris",fav)+row("Récents",rec.filter(function(k){return fav.indexOf(k)<0}).slice(0,6));
+  $("none").hidden=!q||document.querySelectorAll("#tools .cell,#links .cell").length>0;
+  $("status").textContent=get("cdk.data",null)?"Modifications enregistrées sur cet appareil. Exporte data.js pour les publier.":"Contenu identique à data.js.";
+}
+function save(){put("cdk.data",data);render()}
+function mv(a,i,d){var j=i+d;if(j<0||j>=a.length)return;var t=a[i];a[i]=a[j];a[j]=t}
+
+/* Dialogue d'ajout / modification */
+var dlg=$("dlg"), ctx=null;
+function openDlg(z,g,i){
+  ctx={z:z,g:g,i:i};var it=i>-1?data[z][g].items[i]:{n:"",d:"",u:"",i:"",soon:false};
+  $("dt").textContent=i>-1?"Modifier":"Ajouter";
+  $("fg").innerHTML=data[z].map(function(G,k){return '<option value="'+k+'"'+(k===g?" selected":"")+'>'+esc(G.t)+'</option>'}).join("");
+  $("fn").value=it.n;$("fd").value=it.d;$("fu").value=it.u;$("fi").value=it.i;$("fs").checked=it.soon;
+  dlg.returnValue="";dlg.showModal();
+}
+dlg.addEventListener("close",function(){
+  if(dlg.returnValue!=="ok"||!ctx)return;
+  var it={n:$("fn").value.trim(),d:$("fd").value.trim(),u:$("fu").value.trim(),i:$("fi").value.trim(),soon:$("fs").checked}, ng=+$("fg").value, c=ctx, L=data[c.z];
+  if(c.i<0)L[ng].items.push(it);
+  else if(ng===c.g)L[c.g].items[c.i]=it;
+  else{L[c.g].items.splice(c.i,1);L[ng].items.push(it)}
+  save();
+});
+
+/* Actions */
+function act(b){
+  var a=b.dataset.a,z=b.dataset.z,g=+b.dataset.g,i=+b.dataset.i,L=data[z],G=L&&L[g];
+  if(a==="fav"){var k=b.dataset.k,p=fav.indexOf(k);if(p>-1)fav.splice(p,1);else fav.push(k);put("cdk.fav",fav);render()}
+  else if(a==="up"||a==="down"){mv(G.items,i,a==="up"?-1:1);save()}
+  else if(a==="gup"||a==="gdown"){mv(L,g,a==="gup"?-1:1);save()}
+  else if(a==="edit")openDlg(z,g,i);
+  else if(a==="add")openDlg(z,g,-1);
+  else if(a==="del"){if(confirm("Supprimer « "+G.items[i].n+" » ?")){G.items.splice(i,1);save()}}
+  else if(a==="gdel"){if(confirm("Supprimer la rubrique « "+G.t+" » et ses "+G.items.length+" entrée(s) ?")){L.splice(g,1);save()}}
+  else if(a==="gren"){var t=prompt("Nom de la rubrique",G.t);if(t&&t.trim()){G.t=t.trim();save()}}
+  else if(a==="newgrp"){var n=prompt("Nom de la nouvelle rubrique");if(n&&n.trim()){L.push({t:n.trim(),c:COLORS[L.length%COLORS.length],items:[]});save()}}
+}
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-a]");
+  if(b){e.preventDefault();act(b);return}
+  var a=e.target.closest("a.tile[data-k]");
+  if(a){var k=a.dataset.k;rec=[k].concat(rec.filter(function(x){return x!==k})).slice(0,10);put("cdk.rec",rec)}
+});
+document.addEventListener("toggle",function(e){
+  var d=e.target;if(q||!d.matches||!d.matches("details.grp"))return;
+  var k=d.dataset.k,p=closed.indexOf(k);
+  if(d.open&&p>-1)closed.splice(p,1);else if(!d.open&&p<0)closed.push(k);
+  put("cdk.closed",closed);
+},true);
+
+/* Recherche et raccourcis */
+$("q").addEventListener("input",function(){q=norm(this.value.trim());render()});
+$("q").addEventListener("keydown",function(e){
+  if(e.key==="Enter"){var a=document.querySelector("#tools a.tile,#links a.tile");if(a)a.click()}
+  else if(e.key==="Escape"){this.value="";q="";render();this.blur()}
+});
+document.addEventListener("keydown",function(e){
+  if(e.key==="/"&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)&&!dlg.open){e.preventDefault();$("q").focus()}
+});
+
+/* Thème */
+var TH=["auto","light","dark"],LAB={auto:"Thème : auto",light:"Thème : clair",dark:"Thème : sombre"},cur="auto";
+try{cur=LS.getItem("cdk.theme")||"auto"}catch(e){}
+function theme(t){cur=t;if(t==="auto")delete root.dataset.theme;else root.dataset.theme=t;$("theme").textContent=LAB[t]}
+$("theme").addEventListener("click",function(){var n=TH[(TH.indexOf(cur)+1)%3];theme(n);try{LS.setItem("cdk.theme",n)}catch(e){}});
+theme(cur);
+
+/* Édition, export, import */
+$("edit").addEventListener("click",function(){edit=!edit;this.textContent=edit?"Terminer":"Modifier";this.setAttribute("aria-pressed",edit);$("admin").hidden=!edit;render()});
+$("export").addEventListener("click",function(){
+  var u=URL.createObjectURL(new Blob(["window.CDK_DATA = "+JSON.stringify(data,null,1)+";\n"],{type:"text/javascript"})),a=document.createElement("a");
+  a.href=u;a.download="data.js";a.click();setTimeout(function(){URL.revokeObjectURL(u)},1000);
+});
+$("import").addEventListener("click",function(){$("file").click()});
+$("file").addEventListener("change",function(){
+  var f=this.files[0],inp=this;if(!f)return;var r=new FileReader();
+  r.onload=function(){try{
+    var d=sane(JSON.parse(String(r.result).replace(/^[^{]*/,"").replace(/;?\s*$/,"")));if(!d)throw 0;
+    if(confirm("Remplacer les données actuelles par ce fichier ?")){data=d;save()}
+  }catch(x){alert("Fichier non valide.")}inp.value=""};
+  r.readAsText(f);
+});
+$("reset").addEventListener("click",function(){
+  if(confirm("Abandonner les modifications de cet appareil et revenir au contenu de data.js ?")){try{LS.removeItem("cdk.data")}catch(e){}data=sane(window.CDK_DATA);render()}
+});
+
+render();
+if("serviceWorker" in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(function(){});
+})();
 </script>
 </body>
 </html>
