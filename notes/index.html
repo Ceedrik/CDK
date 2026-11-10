@@ -93,7 +93,7 @@ label.btn{display:inline-block;cursor:pointer}
   <div class="tree" id="tree"></div>
   <div class="mu" id="bk" style="padding:0 14px 8px;font-size:13px"></div>
   <div class="tags" id="tl" style="padding:8px 14px"></div>
-  <div class="df"><button class="btn" id="ex">Exporter</button><label class="btn" for="fj">Importer</label><button class="btn" id="tm">Tags</button><button class="btn" id="th">◐</button></div>
+  <div class="df"><button class="btn" id="ex">Exporter</button><label class="btn" for="fj">Importer</label><button class="btn" id="tm">Tags</button><button class="btn" id="gh">GitHub</button><button class="btn" id="th">◐</button></div>
 </aside>
 <header>
   <button class="ib" id="bg" aria-label="Menu">☰</button>
@@ -117,6 +117,18 @@ function applyTheme(){const r=document.documentElement;if(ui.theme)r.dataset.the
 function tileHTML(i){return `<div class="tile" data-g="${i.id}" style="${cs(col(i))}">${i.img?`<img class="th" src="${i.img}" alt="">`:`<span class="th">${esc([...i.title][0]||"•").toUpperCase()}</span>`}<b>${esc(i.title)}</b></div>`}
 function list(a){return ordering?a.map(i=>rowHTML(i,true)).join(""):ui.grid?`<div class="grid">${a.map(tileHTML).join("")}</div>`:a.map(i=>rowHTML(i)).join("")}
 function vw(){return `<div class="bar" style="justify-content:flex-end;margin:4px 0"><button class="tg" data-az="1">A→Z</button><button class="tg" data-od="1">${ordering?"✓ Ordre":"↕ Ordre"}</button><button class="tg" data-vw="1">${ui.grid?"☰ Liste":"▦ Tuiles"}</button></div>`}
+let gh={repo:"",path:"notes-data.json",token:""};
+try{gh=Object.assign(gh,JSON.parse(localStorage.getItem("notes-gh")||"{}"))}catch(e){}
+const ghU=()=>"https://api.github.com/repos/"+gh.repo+"/contents/"+gh.path.split("/").map(encodeURIComponent).join("/");
+const ghH=raw=>({Authorization:"Bearer "+gh.token,Accept:raw?"application/vnd.github.raw+json":"application/vnd.github+json"});
+function b64(s){const b=new TextEncoder().encode(s);let r="";for(let i=0;i<b.length;i+=32768)r+=String.fromCharCode.apply(null,b.subarray(i,i+32768));return btoa(r)}
+async function ghPush(){flush();const u=ghU();let sha;const g=await fetch(u,{headers:ghH()});if(g.ok)sha=(await g.json()).sha;else if(g.status!==404)throw new Error("lecture "+g.status);const r=await fetch(u,{method:"PUT",headers:{...ghH(),"Content-Type":"application/json"},body:JSON.stringify({message:"Sauvegarde notes "+new Date().toISOString().slice(0,16).replace("T"," "),content:b64(JSON.stringify(db)),sha})});if(!r.ok)throw new Error("envoi "+r.status);ui.lastExport=Date.now();saveUi();render()}
+async function ghPull(){const r=await fetch(ghU(),{headers:ghH(true)});if(!r.ok)throw new Error("lecture "+r.status);return r.json()}
+function ghSheet(){const s=sheet(`<h2 class="sec" style="margin:0 0 6px">Sauvegarde GitHub</h2><label class="f" style="margin-top:6px">Dépôt (compte/nom)</label><input id="ghr" value="${esc(gh.repo)}" placeholder="ceedrik/notes-data" autocomplete="off"><label class="f">Fichier dans le dépôt</label><input id="ghp" value="${esc(gh.path)}" autocomplete="off"><label class="f">Jeton d’accès (Contents : lecture et écriture)</label><input id="ght" type="password" value="${esc(gh.token)}" autocomplete="off"><div class="bar"><button class="btn p" id="gps">Envoyer</button><button class="btn" id="gpl">Restaurer</button><button class="btn" id="an">Fermer</button></div><p class="mu" style="font-size:13px;margin:0">Utilise un dépôt privé : le fichier contient toutes tes notes.</p>`);
+const rd=()=>{gh={repo:s.querySelector("#ghr").value.trim(),path:s.querySelector("#ghp").value.trim()||"notes-data.json",token:s.querySelector("#ght").value.trim()};try{localStorage.setItem("notes-gh",JSON.stringify(gh))}catch(e){}if(!gh.repo||!gh.token){toast("Renseigne le dépôt et le jeton.");return false}return true};
+s.querySelector("#an").onclick=closeSh;
+s.querySelector("#gps").onclick=async()=>{if(!rd())return;toast("Envoi en cours…");try{await ghPush();closeSh();toast("Sauvegardé sur GitHub")}catch(e){toast("Échec GitHub ("+e.message+")")}};
+s.querySelector("#gpl").onclick=async()=>{if(!rd())return;try{const j=await ghPull();if(!j||!Array.isArray(j.items))throw new Error("format inattendu");impSheet(j)}catch(e){toast("Échec GitHub ("+e.message+")")}}}
 function bkTxt(){if(!ui.lastExport)return "Dernier export : jamais";const d=Math.floor((Date.now()-ui.lastExport)/864e5);return "Dernier export : "+(d<1?"aujourd’hui":d==1?"hier":"il y a "+d+" jours")}
 function bk(){if(!db.items.length)return "";const d=ui.lastExport?Math.floor((Date.now()-ui.lastExport)/864e5):99;return d<7?"":`<div class="bn"><span>${ui.lastExport?"Dernière sauvegarde il y a "+d+" jours.":"Aucune sauvegarde exportée."}</span><button class="btn p" id="ex2">Exporter</button></div>`}
 function undo(m,fn){const t=document.createElement("div");t.className="ts";t.innerHTML=esc(m)+` <button class="tg" style="margin-left:8px">Annuler</button>`;document.body.append(t);const k=setTimeout(()=>t.remove(),7000);t.querySelector("button").onclick=()=>{clearTimeout(k);t.remove();fn()}}
@@ -234,6 +246,7 @@ document.addEventListener("click",e=>{
   if(el=c("[data-mv]")){const [id,dv]=el.dataset.mv.split(":"),x=get(id),sb=kids(x.parent||null),y=sb[sb.indexOf(x)+ +dv];if(y){const a=db.items.indexOf(x),b=db.items.indexOf(y);[db.items[a],db.items[b]]=[db.items[b],db.items[a]];flush();render()}return}
   if(c("#th")){ui.theme=ui.theme===""?"light":ui.theme==="light"?"dark":"";saveUi();return applyTheme()}
   if(c("#tm")){dr(false);return tagMgr()}
+  if(c("#gh")){dr(false);return ghSheet()}
   if(c("#xc")&&it){if(!kids(it.id).length)return dup(it,false);const s=sheet(`<p style="margin:0 0 6px">Dupliquer “${esc(it.title)}”</p><div class="bar"><button class="btn p" id="d1">Fiche seule</button><button class="btn p" id="d2">Avec sous-éléments</button><button class="btn" id="an">Annuler</button></div>`);s.querySelector("#d1").onclick=()=>{closeSh();dup(it,false)};s.querySelector("#d2").onclick=()=>{closeSh();dup(it,true)};s.querySelector("#an").onclick=closeSh;return}
   if(el=c("[data-c]")){if(it){it.col=el.dataset.c;flush();render()}return}
   if(c("#eir")&&it){it.img="";flush();return render()}
