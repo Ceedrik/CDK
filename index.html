@@ -1,50 +1,184 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CDK</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CDK – Outils et liens</title>
+<meta name="description" content="Mes outils JDR, professionnels et perso, et mon tableau de bord de liens.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1f3f6;--surface:#fff;--ink:#1a2030;--muted:#5a6477;--line:#d8dde6;--focus:#2d5fd0;
+  --head:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#12161f;--surface:#1b2130;--ink:#e8ebf2;--muted:#98a1b3;--line:#2b3447;--focus:#8fb0ff}
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 18px 48px}
+header{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:end;justify-content:space-between;margin-bottom:34px}
+h1{font:700 clamp(2.4rem,7vw,3.6rem)/1 var(--head);margin:0;letter-spacing:-.02em}
+header p{margin:6px 0 0;color:var(--muted)}
+.search{flex:1 1 260px;max-width:380px}
+.search input{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit}
+h2{font:700 1.6rem/1.2 var(--head);margin:0 0 18px}
+section.zone{margin-bottom:46px}
+.grp{margin-bottom:26px}
+.grp h3{font:700 1.1rem/1.3 var(--head);margin:0 0 10px;padding-left:10px;border-left:5px solid var(--c)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.tiles.small{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+
+/* Tuile : fond dégradé couleur de rubrique, image en fondu derrière le texte */
+.tile{position:relative;display:flex;align-items:flex-end;min-height:108px;overflow:hidden;
+  border:1px solid var(--line);border-radius:12px;color:inherit;text-decoration:none;
+  background:linear-gradient(105deg,var(--surface) 35%,color-mix(in srgb,var(--c) 24%,var(--surface)))}
+.small .tile{min-height:68px}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75;
+  -webkit-mask-image:linear-gradient(100deg,transparent 15%,#000 90%);
+  mask-image:linear-gradient(100deg,transparent 15%,#000 90%);transition:transform .4s}
+.txt{position:relative;display:block;padding:12px 14px;text-shadow:0 0 8px var(--surface),0 0 3px var(--surface)}
+.name{display:block;font-weight:600}
+.desc{display:block;font-size:.88rem;color:var(--muted)}
+a.tile:hover{border-color:var(--c)}
+a.tile:hover img{transform:scale(1.05)}
+.tile.soon{opacity:.6}
+.badge{font-size:.75rem;margin-left:8px;padding:1px 8px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-weight:400;text-shadow:none}
+.empty{color:var(--muted)}
+a:focus-visible,input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+footer{color:var(--muted);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){.tile img{transition:none}a.tile:hover img{transform:none}}
+</style>
 </head>
 <body>
-    <header>
-        <h1>Projets CDK</h1>
-    </header>
-    <main>
-        <section class="project-category" style="background-image: url('images/1366661.png');">
-            <h2>Projets Généraux</h2>
-            <ul class="project-list" style="center">
-                <li><a href="https://script.google.com/macros/s/AKfycbwh_JsvB-DHLt2mk2THG0JaXrVXAdn-0muMD1RtLE5bH4Md2v-ktO9439fevbhZCOteRQ/exec">Budget</a></li>
-                <li><a href="https://script.google.com/macros/s/AKfycbw50rysxhSyiuqUkWsoUMvlj6Oc45XrP8U5gPlpd6MANoHprMTgXZxZoCav2WbOjrO2/exec">🎁 KDO</a></li>
-            </ul>
-        </section>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>CDK</h1>
+      <p>Mes outils et mes sites du quotidien</p>
+    </div>
+    <label class="search">
+      <input id="q" type="search" placeholder="Rechercher un outil ou un site" aria-label="Rechercher un outil ou un site" autocomplete="off">
+    </label>
+  </header>
 
-        <section class="project-category" style="background-image: url('images/fond_dnd.jpg');">
-            <h2>Donjons & Dragons</h2>
-            <ul class="project-list">
-                <li><a href="https://script.google.com/macros/s/AKfycby264fC2IQSWop1L4N1c21ZtA_jOkmUlnN9VRxsj7RsDh6R97OFl_yu27Pa-HveQTAg/exec">Feuille de Personnage</a></li>
-                <li><a href="dnd/aide_de_jeu.html">--</a></li>
-            </ul>
-        </section>
+  <section class="zone" aria-labelledby="t-outils">
+    <h2 id="t-outils">Mes outils</h2>
+    <div id="tools"></div>
+  </section>
 
-        <section class="project-category" style="background-image: url('images/fond_starwars.jpg');">
-            <h2>Star Wars</h2>
-            <ul class="project-list">
-                <li><a href="https://script.google.com/macros/s/AKfycbzOsBLBklWYBr16zH_XsH4iZGsp37VFP1PtS6FodqHjww8V-JoHJ36myfB1U3v0OqH8/exec">Fiche de personnage</a></li>
-                <li><a href="starwars/creation_perso.html">--</a></li>
-            </ul>
-        </section>
+  <section class="zone" aria-labelledby="t-sites">
+    <h2 id="t-sites">Mes sites</h2>
+    <div id="links"></div>
+  </section>
 
-        <section class="project-category" style="background-image: url('images/fond_pro.jpg');">
-            <h2>Outils Professionnels</h2>
-            <ul class="project-list">
-                <li><a href="Tests/WebProjet_SQL.html">WebProjet</a></li>
-                <li><a href="outils_pro/automatisation_tache.html">--</a></li>
-            </ul>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2025 - Essais Web CDK</p>
-    </footer>
+  <p id="none" class="empty" hidden>Aucun résultat. Essaie un autre mot.</p>
+  <footer>© 2026 – Essais Web CDK</footer>
+</div>
+
+<script>
+/* ===== À MODIFIER ICI =====
+   i:"img/mon-image.jpg" → image en fondu derrière la tuile (facultatif).
+   soon:true             → outil pas encore créé (grisé, non cliquable).
+   Conseil images : environ 600×300 px, JPG ou WebP, moins de 100 Ko, dans le dossier img/. */
+var GAS = "https://script.google.com/macros/s/";
+var TOOLS = [
+  {t:"Notes autonomes", c:"#b7791f", items:[
+    {n:"Mes notes", d:"Arborescence, tags, liens wiki", u:"notes/index.html", i:""}
+  ]},
+  {t:"Outils professionnels", c:"#3b6fb6", items:[
+    {n:"WebProjet", d:"Reporting coordinateurs", u:"Tests/WebProjet_SQL.html", i:""},
+    {n:"Automatisation de tâches", d:"Scripts et automatisations", u:"outils_pro/automatisation_tache.html", i:""},
+    {n:"Générateur de procédures", d:"Étapes et critères de vérification, export Markdown", u:"outils_pro/procedures.html", i:"", soon:true}
+  ]},
+  {t:"Donjons & Dragons", c:"#b5413a", items:[
+    {n:"Feuille de personnage", d:"Fiche en ligne", u:GAS+"AKfycby264fC2IQSWop1L4N1c21ZtA_jOkmUlnN9VRxsj7RsDh6R97OFl_yu27Pa-HveQTAg/exec", i:""},
+    {n:"Aide de jeu", d:"Règles et repères pour la table", u:"dnd/aide_de_jeu.html", i:""},
+    {n:"Gestionnaire d’initiative", d:"Ordre de tour, PV, conditions", u:"dnd/initiative.html", i:"", soon:true},
+    {n:"Générateur de PNJ et de rencontres", d:"Noms, traits, rencontres aléatoires", u:"dnd/generateur.html", i:"", soon:true}
+  ]},
+  {t:"Star Wars", c:"#1f8a8a", items:[
+    {n:"Fiche de personnage", d:"Fiche en ligne", u:GAS+"AKfycbzOsBLBklWYBr16zH_XsH4iZGsp37VFP1PtS6FodqHjww8V-JoHJ36myfB1U3v0OqH8/exec", i:""},
+    {n:"Création de personnage", d:"Assistant de création", u:"starwars/creation_perso.html", i:""},
+    {n:"Lanceur de dés narratifs", d:"Résultat résumé : succès, avantages, Force", u:"starwars/des.html", i:"", soon:true},
+    {n:"Réserve de Destin", d:"Points de Force et de côté obscur", u:"starwars/destin.html", i:"", soon:true}
+  ]},
+  {t:"Perso", c:"#7a5fb0", items:[
+    {n:"Budget", d:"Suivi du budget", u:GAS+"AKfycbwh_JsvB-DHLt2mk2THG0JaXrVXAdn-0muMD1RtLE5bH4Md2v-ktO9439fevbhZCOteRQ/exec", i:""},
+    {n:"KDO", d:"Idées et listes de cadeaux", u:GAS+"AKfycbw50rysxhSyiuqUkWsoUMvlj6Oc45XrP8U5gPlpd6MANoHprMTgXZxZoCav2WbOjrO2/exec", i:""}
+  ]}
+];
+var LINKS = [
+  {t:"Jeux vidéo", c:"#c26a1a", items:[
+    {n:"Steam", u:"https://store.steampowered.com/", i:""},
+    {n:"Nintendo", u:"https://www.nintendo.com/fr-fr/", i:""},
+    {n:"Jeuxvideo.com", u:"https://www.jeuxvideo.com/", i:""}
+  ]},
+  {t:"Finances", c:"#2f8f5b", items:[
+    {n:"Impots.gouv.fr", u:"https://www.impots.gouv.fr/", i:""},
+    {n:"Service-public.fr", u:"https://www.service-public.fr/", i:""}
+  ]},
+  {t:"Actualités", c:"#4f6bd6", items:[
+    {n:"Franceinfo", u:"https://www.franceinfo.fr/", i:""},
+    {n:"Le Monde", u:"https://www.lemonde.fr/", i:""},
+    {n:"Numerama", u:"https://www.numerama.com/", i:""}
+  ]},
+  {t:"Développement", c:"#6b7280", items:[
+    {n:"GitHub", u:"https://github.com/", i:""},
+    {n:"MDN Web Docs", u:"https://developer.mozilla.org/fr/", i:""},
+    {n:"Stack Overflow", u:"https://stackoverflow.com/", i:""}
+  ]},
+  {t:"Jeu de rôle", c:"#a23e6b", items:[
+    {n:"D&D Beyond", u:"https://www.dndbeyond.com/", i:""},
+    {n:"AideDD", u:"https://www.aidedd.org/", i:""}
+  ]}
+];
+/* ===== FIN DE LA ZONE À MODIFIER ===== */
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function norm(s){return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+
+function render(el, data, q, external, small){
+  var html = "", n = 0;
+  data.forEach(function(g){
+    var items = g.items.filter(function(i){
+      return !q || norm(g.t+" "+i.n+" "+(i.d||"")).indexOf(q) > -1;
+    });
+    if(!items.length) return;
+    n += items.length;
+    html += '<div class="grp" style="--c:'+g.c+'"><h3>'+esc(g.t)+'</h3><div class="tiles'+(small?' small':'')+'">';
+    items.forEach(function(i){
+      var img = i.i ? '<img src="'+esc(i.i)+'" alt="" loading="lazy" onerror="this.remove()">' : '';
+      var txt = '<span class="txt"><span class="name">'+esc(i.n)+(i.soon?'<span class="badge">bientôt</span>':'')+'</span>'
+              + (i.d?'<span class="desc">'+esc(i.d)+'</span>':'')+'</span>';
+      if(i.soon){
+        html += '<div class="tile soon">'+img+txt+'</div>';
+      } else {
+        var ext = external ? ' target="_blank" rel="noopener noreferrer"' : '';
+        html += '<a class="tile" href="'+esc(i.u)+'"'+ext+'>'+img+txt+'</a>';
+      }
+    });
+    html += '</div></div>';
+  });
+  el.innerHTML = html;
+  return n;
+}
+
+function update(){
+  var q = norm(document.getElementById("q").value.trim());
+  var a = render(document.getElementById("tools"), TOOLS, q, false, false);
+  var b = render(document.getElementById("links"), LINKS, q, true, true);
+  document.getElementById("none").hidden = (a+b) > 0;
+}
+document.getElementById("q").addEventListener("input", update);
+update();
+</script>
 </body>
 </html>
