@@ -4,7 +4,7 @@ window.CDK_DATA = {
    {"n":"Mes notes","d":"Arborescence, tags, liens wiki","u":"notes/index.html","i":"","soon":false}]},
   {"t":"Outils professionnels","c":"#3b6fb6","items":[
    {"n":"WebProjet","d":"Reporting coordinateurs","u":"Tests/WebProjet_SQL.html","i":"","soon":false},
-   {"n":"Automatisation de tâches","d":"Scripts et automatisations","u":"outils_pro/automatisation_tache.html","i":"","soon":false},
+   {"n":"Automatisation de tâches","d":"Scripts et automatisations","u":"outils_pro/automatisation_tache.html","i":"","soon":true},
    {"n":"Générateur de procédures","d":"Étapes et critères de vérification, export Markdown","u":"outils_pro/procedures.html","i":"","soon":true}]},
   {"t":"Donjons & Dragons","c":"#b5413a","items":[
    {"n":"Feuille de personnage","d":"Fiche en ligne","u":"https://script.google.com/macros/s/AKfycby264fC2IQSWop1L4N1c21ZtA_jOkmUlnN9VRxsj7RsDh6R97OFl_yu27Pa-HveQTAg/exec","i":"","soon":false},
