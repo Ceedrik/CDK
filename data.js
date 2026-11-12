@@ -132,7 +132,7 @@ window.CDK_DATA = {
      "n": "Jeuxvideo.com",
      "d": "",
      "u": "https://www.jeuxvideo.com/",
-     "i": "",
+     "i": "img/jvcom.png",
      "soon": false
     }
    ]
