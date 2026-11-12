@@ -8,7 +8,7 @@ window.CDK_DATA = {
      "n": "Mes notes",
      "d": "Arborescence, tags, liens wiki",
      "u": "notes/index.html",
-     "i": "img/icon-192.png",
+     "i": "img/second_brain.jpg",
      "soon": false
     }
    ]
@@ -48,7 +48,7 @@ window.CDK_DATA = {
      "n": "Feuille de personnage",
      "d": "Fiche en ligne",
      "u": "https://script.google.com/macros/s/AKfycby264fC2IQSWop1L4N1c21ZtA_jOkmUlnN9VRxsj7RsDh6R97OFl_yu27Pa-HveQTAg/exec",
-     "i": "",
+     "i": "img/DnD_CS.png",
      "soon": false
     },
     {
@@ -82,7 +82,7 @@ window.CDK_DATA = {
      "n": "Fiche de personnage",
      "d": "Fiche en ligne",
      "u": "https://script.google.com/macros/s/AKfycbzOsBLBklWYBr16zH_XsH4iZGsp37VFP1PtS6FodqHjww8V-JoHJ36myfB1U3v0OqH8/exec",
-     "i": "",
+     "i": "img/SWFaD_CS.png",
      "soon": false
     },
     {
@@ -93,7 +93,7 @@ window.CDK_DATA = {
      "soon": false
     },
     {
-     "n": "Lanceur de dés narratifs",
+     "n": "Lanceur de dés",
      "d": "Résultat résumé : succès, avantages, Force",
      "u": "starwars/des.html",
      "i": "",
