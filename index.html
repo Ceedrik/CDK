@@ -19,7 +19,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div><h1>CDK</h1><p>Mes outils et mes sites du quotidien</p></div>
+    <div><h1>CDK</h1><p>Mes outils et mes sites</p></div>
     <div class="bar">
       <input id="q" type="search" placeholder="Rechercher (touche /)" aria-label="Rechercher un outil ou un site" autocomplete="off">
       <button class="btn" id="theme" type="button"></button>
@@ -40,11 +40,11 @@
   <div id="quick"></div>
 
   <section class="zone" aria-labelledby="t1">
-    <div class="zh"><h2 id="t1">Mes outils</h2><button class="btn sm edit-only" type="button" data-a="newgrp" data-z="tools">+ Rubrique</button></div>
+    <div class="zh"><h2 id="t1">Outils</h2><button class="btn sm edit-only" type="button" data-a="newgrp" data-z="tools">+ Rubrique</button></div>
     <div id="tools"></div>
   </section>
   <section class="zone" aria-labelledby="t2">
-    <div class="zh"><h2 id="t2">Mes sites</h2><button class="btn sm edit-only" type="button" data-a="newgrp" data-z="links">+ Rubrique</button></div>
+    <div class="zh"><h2 id="t2">Sites</h2><button class="btn sm edit-only" type="button" data-a="newgrp" data-z="links">+ Rubrique</button></div>
     <div id="links"></div>
   </section>
 
@@ -129,7 +129,7 @@ function row(title,keys){
 function render(){
   document.body.classList.toggle("edit",edit);
   ZONES.forEach(function(z){$(z).innerHTML=data[z].map(function(g,gi){return group(z,g,gi)}).join("")});
-  $("quick").innerHTML=(q||edit)?"":row("Favoris",fav)+row("Récents",rec.filter(function(k){return fav.indexOf(k)<0}).slice(0,6));
+  $("quick").innerHTML=(q||edit)?"":row("Favoris",fav);
   $("none").hidden=!q||document.querySelectorAll("#tools .cell,#links .cell").length>0;
   var P=get("cdk.pub",null),L=get("cdk.data",null);
   $("status").textContent=!L?"Contenu identique à data.js.":(P&&P.s===JSON.stringify(data))?"Publié sur GitHub.":"Modifications non publiées : publie-les sur GitHub ou exporte data.js.";
