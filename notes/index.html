@@ -52,6 +52,14 @@ h2.sec{font-size:14px;color:var(--mu);font-weight:600;margin:28px 0 2px}
 .tile .th{width:100%;height:auto;aspect-ratio:1;border-radius:18px;font-size:34px}
 .tile b{display:block;font-size:13px;line-height:1.25;margin-top:6px;font-weight:600;color:var(--ac)}
 .mv{display:flex;gap:6px}
+.tk input{width:22px;height:22px;accent-color:var(--ac);flex:none}
+.dt{font-size:.85em;color:var(--mu);white-space:nowrap}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0;text-align:center}
+.cal small{color:var(--mu)}
+.cd{position:relative;aspect-ratio:1;border:1px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:10px;font:inherit;padding:0}
+.cd.td{border-color:var(--ac);color:var(--ac);font-weight:700}
+.cd.on{background:var(--ac2)}
+.cd i{position:absolute;right:3px;bottom:2px;font-style:normal;font-size:10px;background:var(--ac);color:var(--on);border-radius:8px;padding:0 5px}
 .bn{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--ac2);border-radius:14px;padding:10px 12px;margin-bottom:14px;font-size:14px}
 a.ex{color:var(--ac);text-decoration:underline;text-underline-offset:2px;word-break:break-all}
 .fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:18px;border:0;background:var(--ac);color:var(--on);font-size:30px;z-index:4}
@@ -110,7 +118,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 let db={items:[]},cur=null,editing=false,wantEdit=false,nt=0,q="",open=new Set(),st,shEl;
 try{const r=localStorage.getItem("notes-v1");if(r)db=JSON.parse(r)}catch(e){}
 const uid=()=>Math.random().toString(36).slice(2,9);
-let ui={grid:false,theme:"",lastExport:0},ordering=false;
+let ui={grid:false,theme:"",lastExport:0},ordering=false,view="",cm=null,cd="";
 try{ui=Object.assign(ui,JSON.parse(localStorage.getItem("notes-ui")||"{}"))}catch(e){}
 function saveUi(){try{localStorage.setItem("notes-ui",JSON.stringify(ui))}catch(e){}}
 function applyTheme(){const r=document.documentElement;if(ui.theme)r.dataset.theme=ui.theme;else delete r.dataset.theme;const b=$("#th");if(b)b.textContent="◐ "+({"":"Auto",light:"Clair",dark:"Sombre"})[ui.theme]}
@@ -129,6 +137,23 @@ const rd=()=>{gh={repo:s.querySelector("#ghr").value.trim(),path:s.querySelector
 s.querySelector("#an").onclick=closeSh;
 s.querySelector("#gps").onclick=async()=>{if(!rd())return;toast("Envoi en cours…");try{await ghPush();closeSh();toast("Sauvegardé sur GitHub")}catch(e){toast("Échec GitHub ("+e.message+")")}};
 s.querySelector("#gpl").onclick=async()=>{if(!rd())return;try{const j=await ghPull();if(!j||!Array.isArray(j.items))throw new Error("format inattendu");impSheet(j)}catch(e){toast("Échec GitHub ("+e.message+")")}}}
+const pad=n=>String(n).padStart(2,"0"),ymd=d=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
+const td=()=>{const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const fmt=s=>s.split("-").reverse().join("/");
+function tasks(){const o=[];db.items.forEach(it=>it.notes.forEach((n,ni)=>n.x.split("\n").forEach((l,li)=>{const m=l.match(/^- \[( |x)\] (.*)$/i);if(!m)return;const d=m[2].match(/@(\d{4}-\d{2}-\d{2})/);o.push({it,ni,li,done:m[1]!==" ",text:m[2].replace(/\s*@\d{4}-\d{2}-\d{2}/,"").trim(),date:d?d[1]:""})})));return o}
+function nOpen(){const n=tasks().filter(t=>!t.done).length;return n?" ("+n+")":""}
+function gcal(t){const s=new Date(t.date+"T00:00:00"),e=new Date(s);e.setDate(e.getDate()+1);return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(t.text)+"&dates="+ymd(s)+"/"+ymd(e)+"&details="+encodeURIComponent(t.it.title)}
+function taskRow(t){return `<div class="row tk" style="${cs(col(t.it))}"><input type="checkbox" data-tk="${t.it.id}:${t.ni}:${t.li}" aria-label="Terminer"><div data-g="${t.it.id}" style="flex:1"><b>${esc(t.text)}</b><small>${esc(t.it.title)}${t.date?" · "+fmt(t.date):""}</small></div>${t.date?`<a class="tg" target="_blank" rel="noopener noreferrer" href="${gcal(t)}">+ Agenda</a>`:""}</div>`}
+function tasksHTML(){const T=tasks().filter(t=>!t.done),t0=td(),by=(a)=>a.sort((x,y)=>x.date.localeCompare(y.date));
+  const g=[["En retard",by(T.filter(t=>t.date&&t.date<t0))],["Aujourd’hui",T.filter(t=>t.date===t0)],["À venir",by(T.filter(t=>t.date>t0))],["Sans date",T.filter(t=>!t.date)]].filter(x=>x[1].length);
+  return `<h1>Tâches</h1>`+(g.length?g.map(([n,a])=>`<h2 class="sec">${n} (${a.length})</h2>`+a.map(taskRow).join("")).join(""):`<p class="mu">Aucune tâche ouverte. Écris <b>- [ ] texte @2026-12-01</b> dans une note, ou utilise le bouton Tâche de l’éditeur.</p>`)}
+function calHTML(){const n=new Date();if(!cm)cm={y:n.getFullYear(),m:n.getMonth()};
+  const by={};tasks().filter(t=>t.date&&!t.done).forEach(t=>(by[t.date]=by[t.date]||[]).push(t));
+  const f=new Date(cm.y,cm.m,1),off=(f.getDay()+6)%7,nd=new Date(cm.y,cm.m+1,0).getDate(),t0=td();
+  let cells="<span></span>".repeat(off);
+  for(let d=1;d<=nd;d++){const k=cm.y+"-"+pad(cm.m+1)+"-"+pad(d),c=(by[k]||[]).length;cells+=`<button class="cd${k===t0?" td":""}${k===cd?" on":""}" data-cd="${k}">${d}${c?`<i>${c}</i>`:""}</button>`}
+  return `<h1>Calendrier</h1><div class="bar" style="justify-content:space-between"><button class="btn" data-cm="-1" aria-label="Mois précédent">‹</button><b style="text-transform:capitalize">${f.toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}</b><button class="btn" data-cm="1" aria-label="Mois suivant">›</button></div><div class="cal">${[..."LMMJVSD"].map(x=>`<small>${x}</small>`).join("")}${cells}</div>`
+  +(cd?`<h2 class="sec">${fmt(cd)}</h2>`+((by[cd]||[]).map(taskRow).join("")||`<p class="mu">Rien de prévu ce jour.</p>`):"")}
 function bkTxt(){if(!ui.lastExport)return "Dernier export : jamais";const d=Math.floor((Date.now()-ui.lastExport)/864e5);return "Dernier export : "+(d<1?"aujourd’hui":d==1?"hier":"il y a "+d+" jours")}
 function bk(){if(!db.items.length)return "";const d=ui.lastExport?Math.floor((Date.now()-ui.lastExport)/864e5):99;return d<7?"":`<div class="bn"><span>${ui.lastExport?"Dernière sauvegarde il y a "+d+" jours.":"Aucune sauvegarde exportée."}</span><button class="btn p" id="ex2">Exporter</button></div>`}
 function undo(m,fn){const t=document.createElement("div");t.className="ts";t.innerHTML=esc(m)+` <button class="tg" style="margin-left:8px">Annuler</button>`;document.body.append(t);const k=setTimeout(()=>t.remove(),7000);t.querySelector("button").onclick=()=>{clearTimeout(k);t.remove();fn()}}
@@ -153,7 +178,7 @@ function mk(title,parent){const it={id:uid(),parent:parent||null,title,img:"",ta
 function go(id,ed){wantEdit=!!ed;const h=id?"#"+id:"";if(location.hash===h||(!h&&!location.hash))return route();location.hash=h}
 function dr(on){$("#dr").classList.toggle("on",on);$("#sc").classList.toggle("on",on);if(on){drawer()}}
 
-function inl(s){return s.replace(/\[\[([^\]]+)\]\]/g,(a,t)=>`<a class="wl${byTitle(t.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"'))?"":" nw"}">${t}</a>`).replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<)]+)/g,(a,x,u,b)=>`<a class="ex" href="${u||b}" target="_blank" rel="noopener noreferrer">${x||b}</a>`).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(\S(?:[^*\n]*?\S)?)\*/g,"<i>$1</i>")}
+function inl(s){return s.replace(/\[\[([^\]]+)\]\]/g,(a,t)=>`<a class="wl${byTitle(t.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"'))?"":" nw"}">${t}</a>`).replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<)]+)/g,(a,x,u,b)=>`<a class="ex" href="${u||b}" target="_blank" rel="noopener noreferrer">${x||b}</a>`).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(\S(?:[^*\n]*?\S)?)\*/g,"<i>$1</i>").replace(/@(\d{4})-(\d{2})-(\d{2})/g,(a,y,m,d)=>`<span class="dt">📅 ${d}/${m}/${y}</span>`)}
 function rt(x){return esc(x).split("\n").map((l,n)=>{
   const m=l.match(/^- \[( |x)\] (.*)$/i);
   if(m)return `<label class="ck"><input type="checkbox" data-l="${n}" ${m[1]!==" "?"checked":""}><span>${inl(m[2])}</span></label>`;
@@ -185,23 +210,23 @@ function editHTML(it){
   <label class="f">Notes</label>${tabsHTML(it,true)}
   <input id="nt2" placeholder="Titre de la note (facultatif)" value="${esc(n.t)}" style="margin-bottom:8px">
   <textarea id="nx" placeholder="Écris ici. [[Nom]] : lien · - [ ] : case · **gras** · *italique* · [texte](https://…)">${esc(n.x)}</textarea>
-  <div class="bar"><button class="btn" id="nl">Insérer un lien</button><button class="btn d" id="nd">Supprimer la note</button></div>
+  <div class="bar"><button class="btn" id="nl">Insérer un lien</button><button class="btn" id="nk">Tâche</button><button class="btn d" id="nd">Supprimer la note</button></div>
   <div class="bar" style="margin-top:28px"><button class="btn" id="xc">Dupliquer</button><button class="btn d" id="xd">Supprimer l’élément</button></div>`}
 
 function render(){
   const it=cur?get(cur):null;
   let p=[],x=it;while(x){p.unshift(x);x=x.parent?get(x.parent):null}
   p.forEach(i=>{if(i.parent)open.add(i.parent)});
-  $("#cr").innerHTML=`<a href="#">Accueil</a>`+p.map(i=>`<i>›</i><a href="#${i.id}">${esc(i.title)}</a>`).join("");
+  $("#cr").innerHTML=`<a href="#">Accueil</a>`+p.map(i=>`<i>›</i><a href="#${i.id}">${esc(i.title)}</a>`).join("")+(view?`<i>›</i><a href="#${view}">${view=="taches"?"Tâches":"Calendrier"}</a>`:"");
   $("#cr").scrollLeft=1e5;
   $("#ed").style.display=it?"":"none";
   $("#ed").textContent=editing?"✓":"✎";
-  $("#fab").style.display=editing?"none":"";
-  $("#m").style.cssText=it?cs(col(it)):"";$("#m").innerHTML=it?(editing?editHTML(it):viewHTML(it)):homeHTML();if(editing&&it)sug();
+  $("#fab").style.display=editing||view?"none":"";
+  $("#m").style.cssText=it?cs(col(it)):"";$("#m").innerHTML=view=="taches"?tasksHTML():view=="agenda"?calHTML():it?(editing?editHTML(it):viewHTML(it)):homeHTML();if(editing&&it)sug();
   document.title=it?it.title:"Mes notes";
   drawer();
 }
-function route(){const h=location.hash.slice(1);cur=get(h)?h:null;editing=wantEdit&&!!cur;wantEdit=false;nt=0;ordering=false;dr(false);render();scrollTo(0,0)}
+function route(){const h=location.hash.slice(1);view=(h=="taches"||h=="agenda")?h:"";cur=get(h)?h:null;editing=wantEdit&&!!cur;wantEdit=false;nt=0;ordering=false;dr(false);render();scrollTo(0,0)}
 addEventListener("hashchange",route);
 
 function treeHTML(pid,d){return kids(pid).map(it=>{const k=kids(it.id).length,o=open.has(it.id);return `<div class="tr${it.id===cur?" cu":""}" style="padding-left:${d*16}px"><button class="car" data-o="${it.id}" aria-label="Déplier">${k?(o?"▾":"▸"):""}</button>${col(it)?`<span class="dot" style="background:${col(it)}"></span>`:""}<span class="nm" data-g="${it.id}">${esc(it.title)}</span></div>`+(o?treeHTML(it.id,d+1):"")}).join("")}
@@ -209,7 +234,7 @@ function drawer(){
   let h;
   if(q){const s=q.toLowerCase(),m=q[0]=="#"?i=>i.tags.some(t=>t.toLowerCase()==s.slice(1)):i=>(i.title+" "+i.tags.join(" ")+" "+i.notes.map(n=>n.t+" "+n.x).join(" ")).toLowerCase().includes(s);
     h=db.items.filter(m).slice(0,50).map(i=>`<div class="tr"><span class="nm" data-g="${i.id}">${esc(i.title)}</span></div>`).join("")||`<p class="mu" style="padding:8px">Aucun résultat.</p>`}
-  else h=`<div class="tr${cur?"":" cu"}"><span class="nm" data-g="">Accueil</span></div>`+treeHTML(null,0);
+  else h=`<div class="tr${cur||view?"":" cu"}"><span class="nm" data-g="">Accueil</span></div><div class="tr${view=="taches"?" cu":""}"><span class="nm" data-g="taches">☑ Tâches${nOpen()}</span></div><div class="tr${view=="agenda"?" cu":""}"><span class="nm" data-g="agenda">▦ Calendrier</span></div>`+treeHTML(null,0);
   $("#tree").innerHTML=h;
   $("#bk").textContent=bkTxt();$("#tl").innerHTML=[...new Set(db.items.flatMap(i=>i.tags))].sort().map(t=>`<button class="tg" data-tg="${esc(t)}">#${esc(t)}</button>`).join("");
 }
@@ -240,6 +265,9 @@ document.addEventListener("click",e=>{
   if(el=c("[data-nt]")){nt=+el.dataset.nt;return render()}
   const it=cur&&get(cur);
   if(c("[data-na]")&&it){it.notes.push({t:"",x:""});nt=it.notes.length-1;flush();return render()}
+  if(el=c("[data-cm]")){const d=new Date(cm.y,cm.m+ +el.dataset.cm,1);cm={y:d.getFullYear(),m:d.getMonth()};cd="";return render()}
+  if(el=c("[data-cd]")){cd=cd===el.dataset.cd?"":el.dataset.cd;return render()}
+  if(c("#nk")&&it){const ta=$("#nx"),s=sheet(`<label class="f" style="margin-top:0">Tâche</label><input id="tt" autocomplete="off"><label class="f">Date (facultatif)</label><input id="tdt" type="date"><div class="bar"><button class="btn p" id="ay">Insérer</button><button class="btn" id="an">Annuler</button></div>`);s.querySelector("#tt").focus();s.querySelector("#an").onclick=closeSh;s.querySelector("#ay").onclick=()=>{const t=s.querySelector("#tt").value.trim();if(!t)return;const d=s.querySelector("#tdt").value,n=it.notes[nt],a=ta.selectionStart,pre=n.x.slice(0,a),line=(pre&&!pre.endsWith("\n")?"\n":"")+"- [ ] "+t+(d?" @"+d:"")+"\n";n.x=pre+line+n.x.slice(ta.selectionEnd);flush();closeSh();render();const t2=$("#nx");t2.focus();t2.selectionStart=t2.selectionEnd=(pre+line).length};return}
   if(c("[data-vw]")){ui.grid=!ui.grid;saveUi();return render()}
   if(c("[data-od]")){ordering=!ordering;return render()}
   if(c("[data-az]")){const ks=kids(cur).sort((a,b)=>a.title.localeCompare(b.title,"fr",{sensitivity:"base"}));db.items=db.items.filter(i=>!ks.includes(i)).concat(ks);flush();return render()}
@@ -270,6 +298,7 @@ document.addEventListener("input",e=>{
   save()});
 document.addEventListener("change",async e=>{
   const t=e.target,it=cur&&get(cur);
+  if(t.dataset&&t.dataset.tk){const [id,ni,li]=t.dataset.tk.split(":"),i2=get(id),n=i2&&i2.notes[+ni];if(n){const ls=n.x.split("\n"),old=ls[+li];ls[+li]=old.replace(/^- \[( |x)\]/i,"- [x]");n.x=ls.join("\n");flush();render();undo("Tâche terminée",()=>{const l2=n.x.split("\n");l2[+li]=old;n.x=l2.join("\n");flush();render()})}return}
   if(it&&t.closest("#tx")&&t.type=="checkbox"){const n=it.notes[nt],ls=n.x.split("\n"),l=+t.dataset.l;ls[l]=ls[l].replace(/^- \[( |x)\]/i,t.checked?"- [x]":"- [ ]");n.x=ls.join("\n");return flush()}
   if(it&&t.id=="ep"){it.parent=t.value||null;return flush()}
   if(it&&t.id=="fi"&&t.files[0]){try{it.img=await img256(t.files[0]);flush();render()}catch(x){toast("Image illisible.")}t.value=""}
